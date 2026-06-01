@@ -318,6 +318,7 @@ const App = (() => {
     const jumlahRepeat = repeatEl ? parseInt(repeatEl.value) : 1;
 
     if (!isServerPC) {
+      console.log("ADMIN SEDANG AKTIF calldriver");
       drivers[id].status = "queued";
       drivers[id].jenis = jenis;
       drivers[id].repeat = jumlahRepeat;
@@ -409,6 +410,7 @@ const App = (() => {
   // 🚀 Tambahkan parameter remoteRepeat di fungsi ini
   function serverHandleRemoteCall(id, jenis, remoteRepeat = null) {
     if (!isServerPC || activeDrivers.has(id)) return;
+    console.log("ADMIN SEDANG AKTIF parameter");
     const driver = drivers[id];
     if (!driver) return;
 
@@ -571,19 +573,6 @@ const App = (() => {
     isProcessing = false;
     // isSpeakingQueue = false; // Buka comment ini kalau lu masih pakai variabel ini
 
-    // 3. KUNCI MIRRORING GLOBAL STOP: Sapu bersih status di DB & UI
-    Object.keys(drivers).forEach((id) => {
-      const statusDB = drivers[id].status;
-
-      // Cari supir mana aja yang lagi dipanggil atau lagi ngantri di sistem
-      if (statusDB === "calling" || statusDB === "queued") {
-        // A. Kembalikan UI di PC lokal ini jadi normal (Standby)
-        if (typeof updateUIState === "function") {
-          updateUIState(id, "idle");
-        }
-      }
-    });
-
     // Reset UI ke standby
     const outText = document.getElementById("output-text");
     const wave = document.getElementById("wave");
@@ -592,6 +581,11 @@ const App = (() => {
       outText.classList.remove("speaking");
     }
     if (wave) wave.classList.remove("active");
+
+    // Reset status tombol di layar (visual aja)
+    Object.keys(drivers).forEach((id) => {
+      if (typeof updateUIState === "function") updateUIState(id, "idle");
+    });
 
     // 4. Kasih notifikasi ke operator
     if (typeof showToast === "function") {
@@ -1033,24 +1027,25 @@ const App = (() => {
   // ── CUSTOM TEXT DI TAB ANNOUNCE ──────────────────
   function speakCustom() {
     const inputEl = document.getElementById("custom-text");
-    const repeatEl = document.getElementById("repeat-custom"); // Ambil dropdown repeat dari tab announce
+    const repeatEl = document.getElementById("repeat-custom");
     if (!inputEl) return;
 
     let text = inputEl.value.trim();
     if (!text) return;
 
-    // Cek jumlah pengulangan
     const jumlahRepeat = repeatEl ? parseInt(repeatEl.value) : 1;
-
-    // Gandakan teks dengan fungsi ulangiTeks
     const finalText = ulangiTeks(text, jumlahRepeat);
 
-    TTS.speak(finalText);
+    // 🚀 PERUBAHAN DI SINI: Jangan pakai TTS.speak(), masukin ke antrean!
+    const customId = "custom-" + Date.now();
+    activeDrivers.add(customId); // Biar nggak diblokir sistem
+    callQueue.push({ id: customId, msg: finalText, repeatsLeft: 0 });
+    processQueue();
 
     addHistory(finalText);
-
     if (UI?.addLog) UI.addLog(`Pengumuman Custom (${jumlahRepeat}x)`, "tts");
-    inputEl.value = ""; // Kosongkan textarea setelah disiarkan
+
+    inputEl.value = "";
     inputEl.focus();
   }
 
@@ -1184,9 +1179,27 @@ const App = (() => {
 
   // ── TEMPLATE CEPAT (KANBAN) ──────────────────────
   function speakTemplate(text) {
-    // Karena backend (Python) sudah pintar mendeteksi bahasa
-    TTS.speak(text);
+    const tempId = "template-" + Date.now();
+    activeDrivers.add(tempId);
+    callQueue.push({ id: tempId, msg: text, repeatsLeft: 0 });
+    processQueue();
+
     addHistory(text);
+  }
+
+  // ── TEST SPEAKER ─────────────────────────────────
+  function testSpeaker() {
+    const testId = "test-" + Date.now();
+    activeDrivers.add(testId);
+    callQueue.push({
+      id: testId,
+      msg: "Speaker ready dan siap digunakan!",
+      repeatsLeft: 0,
+    });
+    processQueue();
+
+    showToast("Menguji speaker...", "success");
+    if (UI?.addLog) UI.addLog("Menjalankan test speaker", "tts");
   }
 
   // ── AUTO-PANGGIL (TIMER DENGAN COUNTDOWN + PAUSE/RESUME + ANTI REFRESH + AUTO REPEAT) ──
@@ -1334,7 +1347,12 @@ const App = (() => {
     countdownInterval = setInterval(updateCountdownDisplay, 1000);
 
     announcementTimer = setTimeout(() => {
-      TTS.speak(text);
+      // PERUBAHAN DI SINI: Masukin timer ke antrean biar gak nabrak supir
+      const timerId = "autotimer-" + Date.now();
+      activeDrivers.add(timerId);
+      callQueue.push({ id: timerId, msg: text, repeatsLeft: 0 });
+      processQueue();
+
       if (UI?.addLog) UI.addLog("Auto-Panggil disiarkan (Looping)", "tts");
 
       // Auto-Repeat
@@ -1436,28 +1454,28 @@ const App = (() => {
   // ── CUSTOM TEXT DI TAB DRIVERS ───────────────────
   function speakCustomDrivers() {
     const inputEl = document.getElementById("custom-text-drivers");
-    const repeatEl = document.getElementById("repeat-custom-drivers"); // Ambil dropdown repeat dari tab drivers
+    const repeatEl = document.getElementById("repeat-custom-drivers");
     if (!inputEl) return;
 
     let text = inputEl.value.trim();
     if (!text) return;
 
-    // Cek jumlah pengulangan
     const jumlahRepeat = repeatEl ? parseInt(repeatEl.value) : 1;
-
-    // Gandakan teks dengan fungsi ulangiTeks
     const finalText = ulangiTeks(text, jumlahRepeat);
 
-    TTS.speak(finalText);
+    // 🚀 PERUBAHAN DI SINI: Masukin ke antrean!
+    const customId = "announce-" + Date.now();
+    activeDrivers.add(customId);
+    callQueue.push({ id: customId, msg: finalText, repeatsLeft: 0 });
+    processQueue();
 
     addHistory(finalText);
-
     if (UI?.addLog)
       UI.addLog(`Panggilan Manual Driver (${jumlahRepeat}x)`, "tts");
-    inputEl.value = ""; // Kosongkan input setelah dipanggil
-    inputEl.focus(); // Kosongkan input setelah dipanggil
-  }
 
+    inputEl.value = "";
+    inputEl.focus();
+  }
   // ── ALAT BANTU: MENGULANG TEKS DENGAN JEDA NAPAS AI ──
   function ulangiTeks(teks, jumlah) {
     if (jumlah <= 1) return teks;
@@ -1985,6 +2003,7 @@ const App = (() => {
           }
           if (isServerPC && data.status === "queued") {
             if (!activeDrivers.has(data.id)) {
+              console.log("ADMIN SEDANG AKTIF WS");
               // Kalau client gak ngirim, baru fallback ke memori driver atau default 1
               const remoteRepeat =
                 data.repeat ||
@@ -2108,6 +2127,7 @@ const App = (() => {
     // await resetGhostStatus(); buat matiin semua panggilan after refresh
     // BUNGKUS RECOVERY ANTREAN BIAR CUMA JALAN DI PC SERVER
     if (isServerPC) {
+      console.log("ADMIN ADKTI DI RESUME");
       await resumeQueueFromDB();
     }
     //  --- share data input/updated ---
