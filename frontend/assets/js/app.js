@@ -4,11 +4,24 @@ const App = (() => {
   let drivers = {};
   let editingDriverId = null;
   let isServerPC = false;
+  let isProcessing = false;
 
   // ── GENERATOR ID AMAN (PENGGANTI crypto.randomUUID) ──
   function generateSafeID() {
     // Gabungan waktu saat ini (biar unik) + angka acak
     return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+  }
+
+  // ── HELPER UNTUK MENGEJA TEKS DI DALAM LINGKUP [ ] ──
+  function prosesEjaanDalamKurung(str) {
+    // Regex ini akan mencari semua teks yang dibungkus [ ]
+    return str.replace(/\[(.*?)\]/g, (match, kata) => {
+      return kata
+        .replace(/\s+/g, "") // Hapus spasi gak penting di dalem kurung
+        .split("") // Pecah jadi per karakter huruf
+        .map((c) => (c.toUpperCase() === "Z" ? "Jet" : c)) // Logic huruf Z jadi 'Jet' bawaan lu
+        .join(" "); // Gabungkan kembali dengan spasi biar dieja
+    });
   }
 
   // ── ANTRIAN ──────────────────────────────────────
@@ -444,14 +457,14 @@ const App = (() => {
 
   // ── ENGINE ANTRIAN (async) ───────────────────────
   // Flag synchronous terpisah untuk cegah double-entry sebelum await
-  let isProcessing = false;
-
+  // ── ENGINE ANTRIAN UTAMA ───────────────────────
   async function processQueue() {
-    // Double lock: isProcessing (sync) + isSpeakingQueue (async)
+    // 1. Single Lock: Cek apakah sedang memproses atau antrean kosong
+    // Komentar disesuaikan karena isSpeakingQueue sudah resmi pensiun
     if (isProcessing || callQueue.length === 0) return;
 
-    isProcessing = true; // kunci SYNCHRONOUS — langsung, sebelum await apapun
-    // isSpeakingQueue = true;
+    isProcessing = true; // Kunci SYNCHRONOUS — langsung, sebelum await apapun
+    // isSpeakingQueue = true; // Sudah tidak dipakai
 
     currentActiveCall = callQueue.shift();
     if (!currentActiveCall) {
@@ -461,54 +474,57 @@ const App = (() => {
     const { id, msg, repeatsLeft } = currentActiveCall;
 
     console.log(
-      `▶ processQueue sedang dijalanlan untuk: ${id} | queue sisa: ${callQueue.length}`,
+      `▶ processQueue sedang dijalankan untuk: ${id} | queue sisa: ${callQueue.length}`,
     );
 
     try {
       updateUIState(id, "calling");
-      // KASIH TAHU DATABASE KALAU LAGI DIPANGGIL
-      // await saveDriverDB(id, "calling");
-      // UBAHAN 1: Hapus 'await', ganti jadi .catch() biar non-blocking
+
+      // UBAHAN 1 LU (Bagus!): Hapus 'await' ganti jadi .catch() biar DB gak nahan speed suara
       saveDriverDB(id, "calling").catch(console.error);
 
       // TETAP PAKAI AWAIT: Tunggu Python (TTS) sampai benar-benar beres bersuara
       await TTS.speak(msg);
 
-      addHistory(msg);
+      // Masukkan ke riwayat setelah panggilan selesai dikumandangkan
+      if (typeof addHistory === "function") {
+        addHistory(msg);
+      }
 
-      // 3. Cek lagi setelah suara selesai (kali aja di-stop pas lagi ngomong)
+      // 3. CEK ULANG: Kali aja supir ini di-stop manual oleh operator saat dia lagi ngomong
       if (!activeDrivers.has(id)) {
         console.log(`[Queue] ID ${id} di-stop saat berbicara.`);
-        // cleanupAndNext();
+        cleanupAndNext(); // 🚀 FIX: WAJIB dinyalain biar isProcessing balik jadi false & lanjut ke antrean berikutnya!
         return;
       }
 
+      // 4. LOGIKA PENGULANGAN PANGGILAN (REPEAT)
       if (repeatsLeft > 0) {
-        await delay(800); // Beri jeda antar pengulangan
+        await delay(800); // Beri jeda antar pengulangan (0.8 detik)
         currentActiveCall.repeatsLeft--;
+
+        // Masukkan kembali ke antrean paling depan agar langsung diulang
         callQueue.unshift(currentActiveCall);
         cleanupAndNext();
       } else {
+        // Jika jatah repeat sudah habis, hapus dari daftar driver aktif
         activeDrivers.delete(id);
         updateUIState(id, "idle");
 
-        // KEMBALIKAN STATUS DATABASE KE STANDBY
-        // await saveDriverDB(id, "standby");
-        // UBAHAN 2: Hapus 'await', ganti jadi .catch()
+        // UBAHAN 2 LU (Bagus!): Kembalikan status ke standby tanpa blocking
         saveDriverDB(id, "standby").catch(console.error);
 
-        // stopDriver(id); // Set ke standby
         cleanupAndNext();
       }
     } catch (err) {
       console.error("Queue Error:", err);
-      cleanupAndNext();
+      cleanupAndNext(); // Fail-safe: jika TTS error, antrean gak ikutan macet
     }
   }
 
   function cleanupAndNext() {
     isProcessing = false;
-    // isSpeakingQueue = false;
+    isSpeakingQueue = false;
     currentActiveCall = null;
     if (callQueue.length > 0) {
       setTimeout(() => processQueue(), 100);
@@ -523,8 +539,9 @@ const App = (() => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  // ── STOP PER DRIVER ──────────────────────────────
+  // ── STOP PER DRIVER (PROSES DI BACKEND) ──────────────────────────────
   function stopDriver(id) {
+    // 1. Bersihkan timer lokal & antrean memori lokal (Optimistic UI supaya instan & responsif)
     if (callTimers[id]) {
       clearTimeout(callTimers[id]);
       delete callTimers[id];
@@ -533,14 +550,30 @@ const App = (() => {
     callQueue = callQueue.filter((item) => item.id !== id);
     updateUIState(id, "idle");
 
-    saveDriverDB(id, "standby").catch(console.error);
+    // Cek apakah driver ini yang memicu audio TOA aktif saat ini
+    const isCurrentActive = currentActiveCall && currentActiveCall.id === id;
 
-    if (currentActiveCall && currentActiveCall.id === id) {
-      TTS.stop();
-      // isSpeakingQueue = false;
+    // 2. Tembak API Backend untuk mengurus SQLite & Pemutusan Audio Fisik
+    fetch(`/api/drivers/${id}/stop?stop_audio=${isCurrentActive}`, {
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(`[Backend Stop] Driver ${id} berhasil diproses:`, data);
+      })
+      .catch((err) =>
+        console.error("Gagal menghentikan driver di backend:", err),
+      );
+
+    // 3. Jika yang di-stop sedang berbicara, ganti antrean lokal ke driver berikutnya
+    if (isCurrentActive) {
+      // Langsung reset UI secara lokal biar layarnya instan berubah
+      if (typeof UI !== "undefined") UI.setIdle();
+      if (typeof Mic !== "undefined") Mic.unmute();
+
       isProcessing = false;
       currentActiveCall = null;
-      processQueue();
+      setTimeout(() => processQueue(), 100); // Jalankan antrean selanjutnya jika ada
     }
   }
 
@@ -1033,6 +1066,9 @@ const App = (() => {
     let text = inputEl.value.trim();
     if (!text) return;
 
+    // PROSES KATA DI DALAM KURUNG SIKU [ ] JADI EJAAN
+    text = prosesEjaanDalamKurung(text);
+
     const jumlahRepeat = repeatEl ? parseInt(repeatEl.value) : 1;
     const finalText = ulangiTeks(text, jumlahRepeat);
 
@@ -1459,6 +1495,9 @@ const App = (() => {
 
     let text = inputEl.value.trim();
     if (!text) return;
+
+    // 🚀 PROSES KATA DI DALAM KURUNG SIKU [ ] JADI EJAAN
+    text = prosesEjaanDalamKurung(text);
 
     const jumlahRepeat = repeatEl ? parseInt(repeatEl.value) : 1;
     const finalText = ulangiTeks(text, jumlahRepeat);

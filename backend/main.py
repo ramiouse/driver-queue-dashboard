@@ -304,15 +304,57 @@ async def text_to_speech(req: TTSRequest):
 @app.post("/api/tts/stop")
 async def stop_audio(): # <-- Wajib ubah jadi async def
     try:
+        # Kunci antrean biar gak ada suara baru yang masuk pas lagi proses stop
+        
         if pygame.mixer.music.get_busy():
             pygame.mixer.music.stop()
+            pygame.mixer.music.unload()
             
-        # TAMBAHAN BARU: Matikan animasi di semua layar saat di-stop paksa 
+        # Broadcast ke semua PC biar animasi gelombangnya mati barengan
         await manager.broadcast({"event": "TTS_STOP"})
         
-        return {"message": "Audio dihentikan"}
+        return {"status": "success","message": "Audio dihentikan"}
     except Exception as e:
         return {"error": str(e)}
+    
+@app.post("/api/drivers/{d_id}/stop")
+async def stop_driver_backend(d_id: str, stop_audio: bool = False):
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    
+    # 1. Ambil data lengkap driver sebelum di-update untuk keperluan broadcast
+    c.execute("SELECT * FROM drivers WHERE id = ?", (d_id,))
+    driver = c.fetchone()
+    
+    if not driver:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Driver tidak ditemukan")
+    
+    # 2. Update status driver ke standby di SQLite
+    c.execute("UPDATE drivers SET status = 'standby' WHERE id = ?", (d_id,))
+    conn.commit()
+    conn.close()
+    
+    # 3. Jika driver ini sedang berbicara, hentikan musik/audio di server PC (TOA)
+    if stop_audio and pygame.mixer.music.get_busy():
+        pygame.mixer.music.stop()
+        pygame.mixer.music.unload()
+        # Broadcast ke semua layar untuk mematikan animasi gelombang suara
+        await manager.broadcast({"event": "TTS_STOP"})
+        
+    # 4. Broadcast status terbaru ke semua PC via WebSocket (agar warna kartu kembali normal)
+    await manager.broadcast({
+        "event": "DRIVER_SAVED",
+        "id": driver["id"],
+        "status": "standby",
+        "name": driver["name"],
+        "noMobil": driver["no_mobil"],
+        "jenis": driver["jenis"],
+        "jumlahRepeat": 1
+    })
+    
+    return {"status": "success", "message": f"Driver {d_id} berhasil dihentikan"}
     
 
 @app.post("/api/stop-all")

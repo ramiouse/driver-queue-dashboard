@@ -88,6 +88,7 @@ const TTS = (() => {
     if (typeof UI !== "undefined") UI.setIdle();
     if (typeof Mic !== "undefined") Mic.unmute();
   }
+
   function isSpeaking() {
     // Karena memutar audio dipindah ke server, kita cukup cek status request-nya
     return isFetching;
