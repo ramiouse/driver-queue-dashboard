@@ -421,7 +421,7 @@ const App = (() => {
     const { id, msg, repeatsLeft } = currentActiveCall;
 
     console.log(
-      `▶ processQueue sedang jalan untuk: ${id} | queue sisa: ${callQueue.length}`,
+      `▶ processQueue sedang dijalanlan untuk: ${id} | queue sisa: ${callQueue.length}`,
     );
 
     try {
