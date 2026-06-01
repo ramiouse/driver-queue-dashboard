@@ -29,6 +29,8 @@ const App = (() => {
         drivers = remoteData;
         if (typeof renderDrivers === "function") renderDrivers();
 
+        syncSpeakerUIFromDB();
+
         Object.keys(drivers).forEach((id) => {
           const statusDB = drivers[id].status;
           if (statusDB !== "standby" || statusDB !== "idle") {
@@ -69,7 +71,7 @@ const App = (() => {
     let wasCalling = null;
     let wasQueued = [];
 
-    // 1. Kumpulkan data dari memory 'drivers'
+    // 1. Kumpulkan data dari memory 'drivers' (Data dari DB)
     for (let id in drivers) {
       if (drivers[id].status === "calling") {
         wasCalling = id;
@@ -81,8 +83,10 @@ const App = (() => {
     // Helper untuk merakit ulang teks panggilan
     const buildQueueItem = (id) => {
       const driver = drivers[id];
-      const selectEl = document.getElementById("jenis-" + id);
-      const jenis = selectEl ? selectEl.value : driver.jenis || "supir";
+
+      // 🚀 AMBIL DARI DATABASE (Bukan dari layar HTML)
+      const jenis = driver.jenis || "supir";
+      const jumlahRepeat = driver.repeat || 1;
 
       // Susun ulang ejaan plat nomor
       const noMobilEja = driver.noMobil
@@ -100,9 +104,6 @@ const App = (() => {
       else if (jenis === "loading")
         msg = `Supir dengan plat nomor ${noMobilEja}, harap masuk ke lodingan W-F-G.`;
 
-      const repeatEl = document.getElementById("repeat-driver");
-      const jumlahRepeat = repeatEl ? parseInt(repeatEl.value) : 1;
-
       return { id, msg, repeatsLeft: Math.max(0, jumlahRepeat - 1) };
     };
 
@@ -119,34 +120,27 @@ const App = (() => {
       recoveredCount++;
     });
 
-    // 3. Pancingan Autoplay Browser (Tunggu klik/ketik dari operator)
+    // 3. 🚀 LANGSUNG EKSEKUSI (Bypass Autoplay Browser!)
     if (recoveredCount > 0) {
       if (typeof showToast === "function") {
         showToast(
-          "Klik di mana saja pada layar untuk memutar suara antrean!",
+          `Memulihkan ${recoveredCount} antrean secara otomatis!`,
           "info",
         );
       }
-      if (UI?.addLog)
-        UI.addLog(
-          `Memulihkan ${recoveredCount} antrean. Menunggu interaksi...`,
-          "sys",
-        );
+      if (UI?.addLog) {
+        UI.addLog(`Memulihkan ${recoveredCount} antrean otomatis...`, "sys");
+      }
 
-      const startRecoveredQueue = () => {
-        if (!isProcessing) {
-          processQueue(); // 🚀 Mesin nyala lagi!
-        }
-        // Matikan jebakan klik biar nggak double
-        document.removeEventListener("click", startRecoveredQueue);
-        document.removeEventListener("keydown", startRecoveredQueue);
-      };
-
-      document.addEventListener("click", startRecoveredQueue);
-      document.addEventListener("keydown", startRecoveredQueue);
+      // Langsung gas nyalain mesin tanpa nunggu klik operator
+      if (typeof isProcessing !== "undefined" && !isProcessing) {
+        processQueue();
+      }
     }
 
-    updateAntrian();
+    if (typeof updateAntrian === "function") {
+      updateAntrian();
+    }
   }
 
   // ── FITUR INGATAN JUMLAH PANGGILAN ──
@@ -356,15 +350,58 @@ const App = (() => {
 
     activeDrivers.add(id);
 
-    // ── MASUKKAN JUMLAH REPEAT KE DALAM QUEUE ──
-    // callQueue.push({ id, msg, repeatsLeft: jumlahRepeat });
-    callQueue.push({ id, msg, repeatsLeft: jumlahRepeat - 1 });
+    // ── MASUKKAN KE DALAM QUEUE JAVASCRIPT ──
+    callQueue.push({ id, msg, repeatsLeft: Math.max(0, jumlahRepeat - 1) });
 
     updateUIState(id, "queued");
-    saveDriverDB(id, "queued");
+
+    saveDriverDB(id, "queued", jumlahRepeat).catch(console.error);
 
     if (!silent) {
       processQueue();
+    }
+  }
+
+  function syncSpeakerUIFromDB() {
+    // 1. Cari driver mana yang statusnya 'calling' di memori drivers
+    const activeDriverId = Object.keys(drivers).find(
+      (id) => drivers[id].status === "calling",
+    );
+
+    const outText = document.getElementById("output-text");
+    const wave = document.getElementById("wave");
+
+    if (activeDriverId) {
+      const driver = drivers[activeDriverId];
+
+      // 2. Rakit ulang pesan yang harusnya sedang dibaca
+      // Gunakan logika perakitan yang sama dengan yang ada di server/queue
+      const noMobilEja = driver.noMobil
+        ? driver.noMobil
+            .replace(/\s+/g, "")
+            .split("")
+            .map((c) => (c.toUpperCase() === "Z" ? "Jet" : c))
+            .join(" ")
+        : driver.name;
+
+      const msg =
+        driver.jenis === "loading"
+          ? `Supir dengan plat nomor ${noMobilEja}, harap masuk ke lodingan W-F-G.`
+          : `Panggilan kepada supir, plat nomor ${noMobilEja}, untuk ke loket W-F-G.`;
+
+      // 3. Update UI
+      if (outText) {
+        outText.innerText = msg;
+        outText.classList.add("speaking");
+      }
+      if (wave) wave.classList.add("active");
+    } else {
+      // Jika tidak ada yang calling, pastikan UI kembali ke default
+      if (outText) {
+        outText.innerText = "Menunggu panggilan...";
+        outText.classList.remove("speaking");
+      }
+      if (wave) wave.classList.remove("active");
     }
   }
 
@@ -389,14 +426,15 @@ const App = (() => {
         : `Panggilan kepada supir, plat nomor ${noMobilEja}, untuk ke loket W-F-G.`;
 
     // 🚀 JIKA ADA KIRIMAN DARI CLIENT, PAKAI ITU. Kalo gak ada, baru baca dropdown Server.
-    let jumlahRepeat = remoteRepeat;
-    if (!jumlahRepeat) {
+    let jumlahRepeat = remoteRepeat ? parseInt(remoteRepeat) : null;
+    if (!jumlahRepeat || isNaN(jumlahRepeat)) {
       const repeatEl = document.getElementById("repeat-driver");
       jumlahRepeat = repeatEl ? parseInt(repeatEl.value) : 1;
     }
 
     activeDrivers.add(id);
-    callQueue.push({ id, msg, repeatsLeft: jumlahRepeat - 1 });
+
+    callQueue.push({ id, msg, repeatsLeft: Math.max(0, jumlahRepeat - 1) });
 
     updateUIState(id, "queued");
     processQueue();
@@ -427,8 +465,11 @@ const App = (() => {
     try {
       updateUIState(id, "calling");
       // KASIH TAHU DATABASE KALAU LAGI DIPANGGIL
-      await saveDriverDB(id, "calling");
-      // TUNGGU TTS sampai benar-benar beres suara keluar
+      // await saveDriverDB(id, "calling");
+      // UBAHAN 1: Hapus 'await', ganti jadi .catch() biar non-blocking
+      saveDriverDB(id, "calling").catch(console.error);
+
+      // TETAP PAKAI AWAIT: Tunggu Python (TTS) sampai benar-benar beres bersuara
       await TTS.speak(msg);
 
       addHistory(msg);
@@ -450,7 +491,9 @@ const App = (() => {
         updateUIState(id, "idle");
 
         // KEMBALIKAN STATUS DATABASE KE STANDBY
-        await saveDriverDB(id, "standby");
+        // await saveDriverDB(id, "standby");
+        // UBAHAN 2: Hapus 'await', ganti jadi .catch()
+        saveDriverDB(id, "standby").catch(console.error);
 
         // stopDriver(id); // Set ke standby
         cleanupAndNext();
@@ -488,7 +531,7 @@ const App = (() => {
     callQueue = callQueue.filter((item) => item.id !== id);
     updateUIState(id, "idle");
 
-    saveDriverDB(id, "standby");
+    saveDriverDB(id, "standby").catch(console.error);
 
     if (currentActiveCall && currentActiveCall.id === id) {
       TTS.stop();
@@ -500,7 +543,18 @@ const App = (() => {
   }
 
   // ── STOP SEMUA (GLOBAL STOP) ─────────────────────
-  function stopAll() {
+  async function stopAll() {
+    // 1. Panggil API Python untuk stop fisik suara & broadcast sinyal ke semua PC
+    try {
+      // Pakai await karena ini operasi jaringan
+      const response = await fetch("/api/stop-all", { method: "POST" });
+      if (!response.ok) throw new Error("Gagal menghubungi server");
+
+      console.log("✅ Perintah stop berhasil dikirim ke server.");
+    } catch (e) {
+      console.error("❌ Gagal stop via server:", e);
+      // Tetap jalanin reset lokal kalau server lagi down (fail-safe)
+    }
     // 1. Hentikan suara seketika (Nembak API Python)
     if (typeof TTS !== "undefined" && TTS.stop) {
       TTS.stop();
@@ -527,11 +581,17 @@ const App = (() => {
         if (typeof updateUIState === "function") {
           updateUIState(id, "idle");
         }
-
-        // B. Lapor ke DB biar PC lain ikut ngereset tombolnya secara serentak!
-        saveDriverDB(id, "standby");
       }
     });
+
+    // Reset UI ke standby
+    const outText = document.getElementById("output-text");
+    const wave = document.getElementById("wave");
+    if (outText) {
+      outText.innerText = "Menunggu panggilan...";
+      outText.classList.remove("speaking");
+    }
+    if (wave) wave.classList.remove("active");
 
     // 4. Kasih notifikasi ke operator
     if (typeof showToast === "function") {
@@ -1958,8 +2018,7 @@ const App = (() => {
           wave.classList.add("active"); // Nyalakan animasi gelombang
         }
       }
-
-      // 👇 KONDISI 4: Kalau suara TTS selesai atau di-stop paksa
+      //  KONDISI 4: Kalau suara TTS selesai atau di-stop paksa
       else if (data.event === "TTS_STOP") {
         const outText = document.getElementById("output-text");
         const wave = document.getElementById("wave");
@@ -1971,6 +2030,30 @@ const App = (() => {
         if (wave) {
           wave.classList.remove("active"); // Matikan animasi gelombang
         }
+      } else if (data.event === "FORCE_STOP_ALL") {
+        console.log("🛑 Menerima perintah STOP GLOBAL dari Server");
+
+        // 1. Matikan suara
+        if (typeof TTS !== "undefined" && TTS.stop) TTS.stop();
+
+        // 2. Reset antrean lokal PC tersebut
+        callQueue = [];
+        currentActiveCall = null;
+        isProcessing = false;
+
+        // 3. Reset UI biar layar balik ke "Menunggu panggilan..."
+        const outText = document.getElementById("output-text");
+        const wave = document.getElementById("wave");
+        if (outText) {
+          outText.innerText = "Menunggu panggilan...";
+          outText.classList.remove("speaking");
+        }
+        if (wave) wave.classList.remove("active");
+
+        // 4. Update status tombol-tombol supir (reset ke idle semua)
+        Object.keys(drivers).forEach((id) => {
+          updateUIState(id, "idle");
+        });
       }
     };
 
@@ -2004,16 +2087,19 @@ const App = (() => {
 
     console.log(isServerPC);
 
-    // 1. TAMBAHAN: Fitur Cegah Refresh (Biar suara gak mati di tengah jalan)
-    window.addEventListener("beforeunload", function (e) {
-      const isBusy = Object.values(drivers).some(
-        (d) => d.status === "calling" || d.status === "queued",
-      );
-      if (isBusy) {
-        e.preventDefault();
-        e.returnValue = "Lagi ada antrean berjalan, yakin mau ditutup/refresh?";
-      }
-    });
+    if (isServerPC) {
+      // 1. TAMBAHAN: Fitur Cegah Refresh (Biar suara gak mati di tengah jalan)
+      window.addEventListener("beforeunload", function (e) {
+        const isBusy = Object.values(drivers).some(
+          (d) => d.status === "calling" || d.status === "queued",
+        );
+        if (isBusy) {
+          e.preventDefault();
+          e.returnValue =
+            "Lagi ada antrean berjalan, yakin mau ditutup/refresh?";
+        }
+      });
+    }
 
     // Tarik data dari Database saat pertama kali buka
     await fetchDrivers();
@@ -2024,7 +2110,7 @@ const App = (() => {
     if (isServerPC) {
       await resumeQueueFromDB();
     }
-    // load updated data
+    //  --- share data input/updated ---
     initWebSocket();
 
     // --- statu reconnect db ---

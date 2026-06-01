@@ -313,6 +313,28 @@ async def stop_audio(): # <-- Wajib ubah jadi async def
         return {"message": "Audio dihentikan"}
     except Exception as e:
         return {"error": str(e)}
+    
+
+@app.post("/api/stop-all")
+async def stop_all_backend():
+    # 1. STOP SUARA DI PYTHON (Kalo ada suara yang lagi bunyi)
+    if pygame.mixer.music.get_busy():
+        pygame.mixer.music.stop()
+        pygame.mixer.music.unload()
+
+
+    conn = sqlite3.connect(DB_FILE)
+    conn.execute("UPDATE drivers SET status = 'standby' WHERE status != 'standby'")
+    conn.commit()
+    conn.close()
+    
+    # 2. BROADCAST KE SEMUA PC VIA WEBSOCKET
+    # Asumsi 'manager' adalah ConnectionManager lu
+    await manager.broadcast({
+        "event": "FORCE_STOP_ALL"
+    })
+    
+    return {"status": "success", "message": "Semua panggilan dihentikan"}
 
 def cleanup_audio(directory: str, max_files: int = 20):
     files = sorted(
@@ -339,11 +361,10 @@ def reconnect_db():
 
 @app.get("/api/is-server-pc")
 async def is_server_pc(request: Request):
-    client_ip = "127.0.0.1"
+    client_ip = "127.0.0.1" # 🟢 Baca IP asli dari browser yang ngeklik
     server_ip = os.getenv("SERVER_IP", "")
-    is_server = (client_ip == "127.0.0.1") or (client_ip == server_ip)
-    # CCTV Level 2
-    # print(f" CEK -> IP Asli: {client_ip} | IP Bawaan: {request.client.host}")
+    # Jika localhost, atau IP client sama dengan IP Server, berarti dia Server
+    is_server = (client_ip in ["127.0.0.1", "localhost", "::1"]) or (client_ip == server_ip)
     return {"is_server_pc": is_server}
 
 

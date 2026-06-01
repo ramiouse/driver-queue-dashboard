@@ -1,2 +1,29 @@
 lagi panggil semua
 di refresh apakah masih ada style status semuanyayang dipanggil, apa cuma 1 yang dipanggil doang, apa stylenya hulang semua?d
+
+
+isServer pindah ke atas
+diubah:
+callDriver
+processQueue
+fetchDrivers
+saveDriverDB
+stopDriver //ubah saveDriverDB
+stopAll //ubah saveDriverDB
+initWebSocket
+init() //sesuaikan
+main.py // cek lagi
+
+
+tambah:
+opsional:
+resetGhostStatus() // opsional
+harus:
+resumeQueueFromDB() 
+initRepeatMemory
+syncSpeakerUIFromDB
+serverHandleRemoteCall
+
+
+QA :
+button pause() ??
