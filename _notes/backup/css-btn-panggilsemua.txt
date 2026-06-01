@@ -1,0 +1,33 @@
+/* ── TOMBOL PANGGIL SEMUA (OUTLINE BIRU) ── */
+.btn-panggil-semua {
+  background-color: transparent !important;
+  border: 1px solid #3b82f6 !important; /* Biru terang sesuai gambar */
+  color: #3b82f6 !important;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-panggil-semua:hover {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  animation: pulseGlowBlue 1.5s infinite;
+  transform: translateY(-2px);
+}
+
+/* Animasi pendaran (glow) warna biru */
+@keyframes pulseGlowBlue {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}

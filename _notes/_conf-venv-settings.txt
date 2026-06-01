@@ -1,0 +1,75 @@
+#---------------------------------
+# create VENV dan activate
+#---------------------------------
+# Simpan & cek libary yang ada (di PC lama)
+pip freeze > requirements.txt
+__________________________________
+#jadiin project pake venv 
+py -3.11 -m venv venv
+__________________________________
+#aktivasi venv di git bas
+source venv/Scripts/activate
+
+#aktivasi venv di cmd
+venv\Scripts\activate
+__________________________________
+# Install semua sekaligus (di PC baru)
+pip install -r requirements.txt
+__________________________________
+
+
+#---------------------------------
+# create VENV dan activate
+#---------------------------------
+
+#cek 
+-pip show winloop
+-pip list
+-pip show fastapi
+
+
+Cara tahu sekarang pakai Python venv atau bukan
+
+Di Git Bash:
+
+which python
+Kalau benar biasanya:
+
+/d/project/backend/venv/Scripts/python
+___
+Cara cek pip masuk ke mana
+
+which pip
+
+IMPORTANT
+
+Kalau terminal ada:
+
+(venv)
+
+itu artinya:
+✅ install package masuk ke venv aktif.
+
+# set otomatis venv
+Biar otomatis aktif di VSCode
+Cara paling bagus
+
+Buat file:
+
+.vscode/settings.json
+
+isi:
+
+{
+  "python.defaultInterpreterPath": "venv/Scripts/python.exe"
+}
+
+# set
+set PM2_HOME=C:\.pm2
+
+
+
+#set
+venv/Scripts/python.exe main.py
+#set
+pm2 start main.py --interpreter "C:\Users\rampc_hp\AppData\Local\Programs\Python\Python311\python.exe"

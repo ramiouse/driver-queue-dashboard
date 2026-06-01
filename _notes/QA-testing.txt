@@ -1,0 +1,2 @@
+lagi panggil semua
+di refresh apakah masih ada style status semuanyayang dipanggil, apa cuma 1 yang dipanggil doang, apa stylenya hulang semua?d

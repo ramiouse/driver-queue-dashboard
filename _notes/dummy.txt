@@ -1,0 +1,309 @@
+  // data tummy buat testing first
+  // const drivers = {
+  //   toal: {
+  //     name: "Pak Toal",
+  //     messages: [
+  //       "Pak Toal, tolong ke depan sekarang.",
+  //       "Pak Toal, mobil sudah disiapkan?",
+  //       "Pak Toal, segera ke lokasi penjemputan.",
+  //       "Pak Toal, ditunggu di depan ya.",
+  //     ],
+  //   },
+  //   mic: {
+  //     name: "Pak Mic",
+  //     messages: [
+  //       "Pak Mic, tolong ke depan sekarang.",
+  //       "Pak Mic, ada penumpang yang menunggu.",
+  //       "Pak Mic, segera ke lokasi penjemputan.",
+  //       "Pak Mic, ditunggu di depan ya.",
+  //     ],
+  //   },
+  // };
+
+#INDEX
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Driver Call System</title>
+
+    <!-- STYLES -->
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <link rel="stylesheet" href="assets/css/animations.css" />
+    <link rel="stylesheet" href="assets/css/header.css" />
+    <link rel="stylesheet" href="assets/css/cards.css" />
+    <link rel="stylesheet" href="assets/css/controls.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- HEADER -->
+      <div class="header">
+        <div class="breadcrumb-bar">
+          <span class="nova">NOVA.CONSOLE</span> <span>/ V1.0</span>
+        </div>
+        <h1>
+          <span class="white-part">Driver </span><span class="slash">/Call</span
+          ><span class="cursor">_</span>
+        </h1>
+        <p class="subtitle">
+          Klik tombol panggil — suara Edge TTS keluar dari speaker PC kamu.<br />
+          Atau gunakan mic untuk perintah suara.
+        </p>
+      </div>
+
+      <!-- SPEAKER OUTPUT -->
+      <div class="output-box">
+        <div class="box-label">Speaker Output</div>
+        <div class="output-text" id="output-text">Menunggu panggilan...</div>
+        <div class="wave" id="wave">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+      </div>
+
+      <!-- INPUT DRIVER -->
+      <div class="output-box" style="margin-bottom: 20px">
+        <div class="box-label">Tambah Kendaraan Baru</div>
+        <div class="custom-section" style="margin-bottom: 0">
+          <input
+            class="custom-input"
+            id="input-no-mobil"
+            placeholder="No. Mobil (ex: B 1234 CD)"
+          />
+          <input
+            class="custom-input"
+            id="input-vendor"
+            placeholder="Vendor / Nama (ex: Bluebird / Pak Jono)"
+          />
+
+          <button
+            class="speak-btn"
+            onclick="App.tambahDriver()"
+            style="color: var(--blue); border-color: var(--blue)"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Tambah
+          </button>
+        </div>
+      </div>
+
+      <!-- modal edit -->
+      <div
+        class="modal-overlay"
+        id="driver-modal"
+        onclick="App.tutupModal(event)"
+      >
+        <div class="modal">
+          <div class="modal-title">Edit Armada</div>
+
+          <div class="form-field">
+            <label class="form-label">Vendor / Nama</label>
+            <input
+              class="form-input"
+              id="modal-vendor"
+              placeholder="e.g. Bluebird / Pak Jono"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">No. Mobil</label>
+            <input
+              class="form-input"
+              id="modal-no-mobil"
+              placeholder="e.g. B 1234 CD"
+            />
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn-ghost" onclick="App.tutupModal(null, true)">
+              Batal
+            </button>
+            <button class="call-btn primary" onclick="App.simpanEditDriver()">
+              Update
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DRIVER CARDS -->
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+          padding: 0 4px;
+        "
+      >
+        <div class="box-label" style="margin-bottom: 0; color: var(--text-mid)">
+          Total Antrian:
+          <span
+            id="total-antrian"
+            style="color: var(--blue); font-weight: 700; font-size: 13px"
+            >2</span
+          >
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button
+            class="speak-btn"
+            onclick="App.panggilSemuaDriver()"
+            style="
+              padding: 6px 12px;
+              font-size: 11px;
+              color: var(--blue);
+              border-color: var(--blue);
+              margin-top: 0;
+            "
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              width="13"
+              height="13"
+              style="margin-right: 4px"
+            >
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            Panggil Semua
+          </button>
+
+          <button
+            class="speak-btn"
+            onclick="App.hapusSemuaDriver()"
+            style="
+              padding: 6px 12px;
+              font-size: 11px;
+              color: var(--red);
+              border-color: var(--border);
+              margin-top: 0;
+            "
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              width="13"
+              height="13"
+              style="margin-right: 4px"
+            >
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+              <path d="M10 11v6M14 11v6"></path>
+            </svg>
+            Clear All
+          </button>
+        </div>
+      </div>
+
+      <!--LIST ALL DRIVERS/ANTRIAN -->
+      <div class="drivers"></div>
+
+      <!-- CUSTOM TEXT -->
+      <div class="custom-section">
+        <input
+          class="custom-input"
+          id="custom-text"
+          placeholder="Ketik teks custom untuk diucapkan..."
+        />
+        <button class="speak-btn" onclick="App.speakCustom()">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+          </svg>
+          Ucapkan
+        </button>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="output-box">
+        <div class="box-label">Pengaturan Suara</div>
+
+        <div class="setting-row">
+          <div class="setting-label-text">Suara</div>
+          <select class="voice-select" id="voice-select"></select>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-label-text">Volume</div>
+          <input type="range" id="vol" min="0" max="100" step="1" value="100" />
+          <div class="setting-val" id="vol-val">100%</div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-label-text">Kecepatan</div>
+          <input
+            type="range"
+            id="rate"
+            min="0.2"
+            max="3"
+            step="0.1"
+            value="0.7"
+          />
+          <div class="setting-val" id="rate-val">0.7x</div>
+        </div>
+      </div>
+
+      <!-- MIC SECTION -->
+      <div class="output-box">
+        <div class="box-label">Perintah Suara (Mic)</div>
+        <div class="mic-controls">
+          <button class="mic-btn" id="mic-btn" onclick="Mic.toggle()">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+            </svg>
+          </button>
+          <div>
+            <div class="mic-status" id="mic-status">
+              Klik mic untuk mulai dengarkan
+            </div>
+            <div class="mic-transcript" id="mic-transcript">
+              Coba: "panggil toal" atau "panggil mic"
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIVITY LOG -->
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+
+    <!-- SCRIPTS — load order penting! -->
+    <script src="assets/js/ui.js"></script>
+    <script src="assets/js/tts.js"></script>
+    <script src="assets/js/mic.js"></script>
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>

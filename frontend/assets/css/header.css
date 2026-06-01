@@ -1,0 +1,117 @@
+/* ── BREADCRUMB ──────────────────────────────────── */
+.breadcrumb-bar {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.breadcrumb-bar::before {
+  content: ">";
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.breadcrumb-bar .nova {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.breadcrumb-bar span {
+  color: var(--text-dim);
+}
+
+/* ── TITLE ───────────────────────────────────────── */
+h1 {
+  font-family: var(--head);
+  font-size: 52px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -1px;
+  margin-bottom: 0;
+  text-align: left;
+}
+
+h1 .white-part {
+  color: #ffffff;
+}
+h1 .slash {
+  color: var(--blue);
+}
+h1 .cursor {
+  color: var(--blue);
+  animation: blink 0.9s step-end infinite;
+}
+
+/* ── SUBTITLE ────────────────────────────────────── */
+.subtitle {
+  font-size: 11px;
+  color: var(--text-mid);
+  line-height: 1.7;
+  margin-top: 10px;
+  margin-bottom: 32px;
+}
+
+/* ── HEAD TOA ────────────────────────────────────── */
+/* Container utama untuk menyejajarkan teks dan animasi ke samping */
+.header-container {
+  display: flex;
+  align-items: center; /* Biar sejajar di tengah secara vertikal */
+  gap: 15px; /* Jarak antara teks dan animasi */
+}
+
+/* Warna biru khusus untuk teks /Call_ */
+.text-blue {
+  color: #3b82f6; /* Ubah hex color ini sesuai warna biru di UI-mu */
+}
+
+/* Container untuk animasi spektrum */
+.audio-spectrum {
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Jarak antar tiang (bar) */
+  height: 40px; /* Tinggi maksimal animasi */
+}
+
+/* Bentuk dasar tiang (bar) spektrum */
+.audio-spectrum .bar {
+  width: 6px;
+  background-color: #3b82f6;
+  border-radius: 4px;
+  /* Efek cahaya menyala (glow) */
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.8);
+  /* Panggil animasi naik-turun */
+  animation: sound-bounce 1.2s ease-in-out infinite;
+}
+
+/* Mengatur tinggi awal dan delay agar bergeraknya bergantian (tidak barengan) */
+.audio-spectrum .bar:nth-child(1) {
+  animation-delay: 0s;
+  height: 15px;
+}
+.audio-spectrum .bar:nth-child(2) {
+  animation-delay: 0.2s;
+  height: 35px;
+}
+.audio-spectrum .bar:nth-child(3) {
+  animation-delay: 0.4s;
+  height: 25px;
+}
+.audio-spectrum .bar:nth-child(4) {
+  animation-delay: 0.6s;
+  height: 15px;
+}
+
+/* Kunci animasi (Keyframes) untuk efek naik turun dan meredup */
+@keyframes sound-bounce {
+  0%,
+  100% {
+    transform: scaleY(0.5);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}

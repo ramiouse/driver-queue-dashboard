@@ -1,0 +1,19 @@
+{
+  "name": "frontend-driver-call",
+  "version": "1.0.0",
+  "description": "Frontend JS & CSS Bundler",
+  "scripts": {
+    "build:js": "terser assets/js/config.js assets/js/ui.js assets/js/tts.js assets/js/mic.js assets/js/app.js -o assets/js/bundle.min.js -c -m",
+    "build:css": "cleancss -o assets/css/bundle.min.css assets/css/main.css assets/css/animations.css assets/css/header.css assets/css/cards.css assets/css/controls.css",
+    "build": "npm run build:js && npm run build:css",
+    "watch": "nodemon --watch assets --ext js,css --ignore assets/js/bundle.min.js --ignore assets/css/bundle.min.css --exec \"npm run build\""
+  },
+  "keywords": [],
+  "author": "Riyu",
+  "license": "ISC",
+  "devDependencies": {
+    "clean-css-cli": "^5.6.3",
+    "nodemon": "^3.0.0",
+    "terser": "^5.0.0"
+  }
+}

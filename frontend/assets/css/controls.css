@@ -1,0 +1,836 @@
+/* ── BUTTONS ─────────────────────────────────────── */
+.call-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.15s;
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+/* ── TOMBOL PANGGIL  ── */
+.call-btn.primary {
+  background-color: transparent !important; /* Latar belakang tembus pandang */
+  border: 1px solid #3b82f6 !important; /* Hanya border yang berwarna oranye */
+  color: #3b82f6 !important; /* Warna ikon (📢) mengikuti border */
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.call-btn.calling-state {
+  background: var(--red);
+  color: #fff;
+  animation: btnPulse 1s infinite;
+}
+.call-btn:active {
+  transform: translateY(0) !important;
+}
+
+.call-btn.primary:hover {
+  background-color: var(
+    --blue
+  ) !important; /* Latar belakang terisi penuh saat hover */
+  border-color: #2563eb !important;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  color: white !important; /* Warna ikon berubah jadi putih agar kontras */
+  animation: pulseGlowOrange 0.9s infinite;
+  transform: translateY(-1px); /* Efek sedikit terangkat */
+}
+
+/* Keyframes untuk efek pendaran (pulse glow) */
+@keyframes pulseGlowOrange {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(230, 126, 34, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(230, 126, 34, 0);
+  }
+}
+
+.speak-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: var(--text-mid);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.speak-btn svg {
+  width: 14px;
+  height: 14px;
+}
+.speak-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+/* ── OUTPUT BOX ──────────────────────────────────── */
+.output-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.box-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.box-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.output-text {
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.7;
+  min-height: 44px;
+  font-style: italic;
+}
+.output-text.speaking {
+  color: var(--text);
+}
+
+/* WAVE */
+.wave {
+  display: none;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+  margin-top: 10px;
+}
+.wave.active {
+  display: flex;
+}
+
+.wave-bar {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--blue);
+  animation: wave 1.2s ease-in-out infinite;
+}
+.wave-bar:nth-child(1) {
+  animation-delay: 0s;
+  height: 8px;
+}
+.wave-bar:nth-child(2) {
+  animation-delay: 0.1s;
+  height: 16px;
+}
+.wave-bar:nth-child(3) {
+  animation-delay: 0.2s;
+  height: 24px;
+}
+.wave-bar:nth-child(4) {
+  animation-delay: 0.3s;
+  height: 16px;
+}
+.wave-bar:nth-child(5) {
+  animation-delay: 0.4s;
+  height: 8px;
+}
+.wave-bar:nth-child(6) {
+  animation-delay: 0.2s;
+  height: 20px;
+}
+.wave-bar:nth-child(7) {
+  animation-delay: 0.1s;
+  height: 12px;
+}
+
+/* ── CUSTOM TEXT ─────────────────────────────────── */
+.custom-section {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.custom-input {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.custom-input::placeholder {
+  color: var(--text-dim);
+}
+.custom-input:focus {
+  border-color: var(--blue);
+}
+
+/* ── SETTINGS ────────────────────────────────────── */
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.setting-label-text {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  white-space: nowrap;
+  min-width: 72px;
+}
+
+input[type="range"] {
+  flex: 1;
+  accent-color: var(--blue);
+  height: 4px;
+  cursor: pointer;
+}
+
+.setting-val {
+  font-size: 11px;
+  color: var(--text-mid);
+  width: 36px;
+  text-align: right;
+}
+
+.voice-select {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 12px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* ── MIC SECTION ─────────────────────────────────── */
+.mic-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mic-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-mid);
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.mic-btn svg {
+  width: 20px;
+  height: 20px;
+}
+.mic-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.mic-btn.listening {
+  border-color: var(--red);
+  background: var(--red-dim);
+  color: var(--red);
+  animation: micPulse 1s infinite;
+}
+
+.mic-status {
+  font-size: 12px;
+  color: var(--text-mid);
+  margin-bottom: 3px;
+}
+.mic-transcript {
+  font-size: 11px;
+  color: var(--text-dim);
+  min-height: 16px;
+  font-style: italic;
+}
+.mic-transcript.active {
+  color: var(--blue);
+}
+
+/* ── LOADING SPINNER ─────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* ── LOG ─────────────────────────────────────────── */
+.log {
+  margin-top: 14px;
+  max-height: 110px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  font-size: 10px;
+  color: var(--text-dim);
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(30, 37, 48, 0.5);
+  display: flex;
+  gap: 10px;
+}
+.log-entry:last-child {
+  border-bottom: none;
+}
+.log-time {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.log-msg {
+  color: var(--text-mid);
+}
+.log-msg.tts {
+  color: var(--blue);
+}
+.log-msg.mic {
+  color: var(--green);
+}
+.log-msg.err {
+  color: var(--red);
+}
+
+/* ── ACTIONS BUTTONS ── */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-mid);
+  transition: all 0.15s;
+}
+
+.icon-btn:hover.edit {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-dim);
+}
+
+.icon-btn:hover.del {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.icon-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* MODAL */
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(6px);
+}
+.modal-overlay.open {
+  display: flex;
+}
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 28px;
+  width: 400px;
+  animation: fadeUp 0.2s ease;
+}
+.modal-title {
+  font-family: var(--head);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 22px;
+}
+.form-field {
+  margin-bottom: 14px;
+}
+.form-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 5px;
+}
+.form-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-input:focus {
+  border-color: var(--blue);
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.btn-ghost {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 9px 18px;
+  color: var(--text-mid);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ghost:hover {
+  border-color: var(--text-mid);
+  color: var(--text);
+}
+
+/* TOAST */
+/* ── TOAST NOTIFICATIONS ── */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+
+.toast {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--blue);
+  border-radius: 6px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  animation: slideInRight 0.3s ease forwards;
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.toast.error {
+  border-left-color: var(--red);
+}
+
+.toast.success {
+  border-left-color: var(--green);
+}
+
+.toast.hiding {
+  animation: slideOutRight 0.3s ease forwards;
+}
+
+@keyframes slideInRight {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* ── ACTION BUTTONS PREMIUM ──────────────────────── */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 0 0px;
+}
+
+.premium-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 11px;
+  font-family: var(--mono);
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Efek Glassmorphism Dasar */
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-mid);
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
+}
+
+.premium-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.premium-btn:active {
+  transform: scale(0.96);
+}
+
+/* --- VARIANT 1: REFRESH --- */
+.btn-refresh {
+  color: var(--green);
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.05);
+}
+.btn-refresh:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+/* --- VARIANT 2: STOP ALL --- */
+.btn-stop {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.05);
+}
+.btn-stop:hover {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+/* --- VARIANT 3: CLEAR DATATABLE --- */
+.btn-clear {
+  color: var(--red);
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+}
+.btn-clear:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+/* --- VARIANT 4: PANGGIL SEMUA (GRADIENT) --- */
+.btn-panggil {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--blue) 0%, #2563eb 100%);
+  border: 1px solid #60a5fa;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.btn-panggil:hover {
+  background: linear-gradient(135deg, #60a5fa 0%, var(--blue) 100%);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+  transform: translateY(-2px);
+  animation: pulseGlowBlue 0.9s infinite;
+}
+
+/* Pastikan keyframes ini tidak terhapus ya. 
+Kalau terhapus, copy-paste kode ini di bagian bawah controls.css atau di animations.css 
+*/
+@keyframes pulseGlowBlue {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+/* --- VARIANT 5: DROPDOWN (1x Panggilan) --- */
+select.btn-dropdown {
+  appearance: none;
+  padding-right: 28px;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%236b7a94" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position-x: calc(100% - 6px);
+  background-position-y: 50%;
+  outline: none;
+  color: var(--text-mid);
+}
+select.btn-dropdown:hover,
+select.btn-dropdown:focus {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--text);
+  transform: translateY(-2px);
+}
+select.btn-dropdown option {
+  background-color: var(--bg2);
+  color: var(--text);
+}
+
+/* --- VARIANT: BLUE (Test Speaker dll) --- */
+.btn-blue {
+  color: var(--blue);
+  border-color: rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.05);
+}
+.btn-blue:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+/* --- VARIANT: ORANGE (Reconnect DB dll) --- */
+.btn-orange {
+  color: #ff9800;
+  border-color: rgba(255, 152, 0, 0.3);
+  background: rgba(255, 152, 0, 0.05);
+}
+.btn-orange:hover {
+  background: rgba(255, 152, 0, 0.15);
+  border-color: rgba(255, 152, 0, 0.6);
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.2);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+/* ── RIWAYAT PANGGILAN PREMIUM (HISTORY) ── */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* Modifikasi Scrollbar Internal */
+.history-list::-webkit-scrollbar {
+  width: 4px;
+}
+.history-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.history-list::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 4px;
+}
+
+/* Struktur Baris Riwayat Premium */
+.history-item {
+  display: flex;
+  align-items: center; /* Memastikan semua elemen di dalam sejajar tengah vertikal */
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.01) 0%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--text-dim);
+  border-radius: 8px;
+  padding: 10px 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 16px; /* Jarak antar elemen */
+  position: relative;
+}
+
+/* Efek Sorot (Hover) Premium */
+.history-item:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 0.03) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  border-color: rgba(59, 130, 246, 0.3);
+  border-left-color: var(--blue);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  transform: translateX(4px);
+}
+
+/* Desain Badge Nomor List (Bentuk Bulat) */
+.history-number {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+
+  /* Membuat bentuk bulat sempurna */
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Mencegah lingkaran gepeng/mengecil */
+  transition: all 0.3s ease;
+}
+
+.history-item:hover .history-number {
+  color: var(--blue);
+  border-color: rgba(59, 130, 246, 0.4);
+  background: var(--blue-dim);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+}
+
+/* Penataan Konten Tengah (Berdampingan / Sejajar) */
+.history-body {
+  display: flex;
+  flex-direction: row; /* Memaksa Jam dan Teks bersebelahan */
+  align-items: center; /* Sejajar tengah vertikal */
+  flex: 1;
+  gap: 12px; /* Jarak antara Jam dan Teks panggilan */
+  overflow: hidden; /* Mencegah teks keluar batas kotak */
+}
+
+.history-time {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  flex-shrink: 0; /* Memastikan jam tidak terlipat ukurannya */
+}
+
+.history-text {
+  font-size: 12px;
+  color: var(--text-mid);
+  font-family: var(--mono);
+  white-space: nowrap; /* Teks tidak turun ke baris baru */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Jika teks sangat panjang, ujungnya akan menjadi "..." */
+  transition: color 0.2s ease;
+}
+
+.history-item:hover .history-text {
+  color: #ffffff; /* Teks teks kustom menjadi putih terang saat disorot */
+}
+
+/* Tombol Replay Khusus Baris History */
+.history-replay-btn {
+  padding: 6px 12px !important;
+  font-size: 10px !important;
+  border-radius: 6px !important;
+  opacity: 0.7;
+}
+
+.history-item:hover .history-replay-btn {
+  opacity: 1;
+}
+
+/* Penataan Tombol Aksi Riwayat (Kanan) */
+.history-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 5;
+}
+
+/* Tombol Hapus Internal Riwayat */
+.history-del-btn {
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+  opacity: 0.4;
+  background: var(--bg3) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-mid) !important;
+  transition: all 0.2s ease;
+}
+
+/* Saat baris di-hover, tombol hapus jadi sedikit kelihatan */
+.history-item:hover .history-del-btn {
+  opacity: 0.7;
+}
+
+/* Saat tombol hapus disorot langsung oleh kursor */
+.history-del-btn:hover {
+  opacity: 1 !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: var(--red) !important;
+  color: var(--red) !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
+  transform: scale(1.05);
+}

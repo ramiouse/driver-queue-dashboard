@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Sound WRH</title>
+
+  <link rel="icon" type="image/png" href="assets/images/megaphone.png" />
+
+  <link rel="stylesheet" href="assets/css/bundle.min.css" />
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="breadcrumb-bar">
+        <span class="nova">RIYU.CONSOLE</span> <span>/ V1.0</span>
+      </div>
+      <div class="audio-spectrum">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+      <h1>
+        <span class="white-part">Driver </span><span class="slash">/Call</span><span class="cursor">_</span>
+      </h1>
+      <p class="subtitle">Sistem panggilan antrean dan pengumuman WRH.</p>
+    </div>
+
+    <div class="tabnav">
+      <div class="tabs">
+        <div class="tab active" onclick="App.switchTab('drivers', this)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          Drivers
+        </div>
+        <div class="tab" onclick="App.switchTab('announce', this)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+          </svg>
+          Announce
+        </div>
+        <div class="tab" onclick="App.switchTab('settings', this)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41" />
+          </svg>
+          Settings
+        </div>
+        <button id="theme-toggle" class="theme-toggle-btn" onclick="App.toggleTheme()" title="Ganti Mode">
+          <svg id="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg id="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="sys-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+        SYS <span class="sys-online">ONLINE</span>
+      </div>
+    </div>
+    <div class="output-box" style="margin-bottom: 20px">
+      <div class="box-label">Speaker Output</div>
+      <div class="output-text" id="output-text">Menunggu panggilan...</div>
+      <div class="wave" id="wave">
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+    </div>
+
+    <!-- DRIVERS -->
+    <div class="panel active" id="panel-drivers">
+      <div class="output-box" style="margin-bottom: 20px">
+        <div class="box-label">Tambah Kendaraan Baru</div>
+        <div class="custom-section" style="margin-bottom: 0; display: flex; gap: 8px; flex-wrap: wrap">
+          <input class="custom-input" id="input-no-mobil" placeholder="No. Mobil (ex: B 1234 CD)" style="flex: 1" />
+          <input class="custom-input" id="input-vendor" placeholder="Vendor / Nama (ex: Pak Ipul)" style="flex: 1" />
+
+          <button class="speak-btn" onclick="
+                App.resetInput('input-no-mobil');
+                App.resetInput('input-vendor');
+              " title="Reset Form" style="
+                color: var(--text-dim);
+                border-color: var(--border);
+                padding: 10px 12px;
+              ">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+              <path d="M10 11v6M14 11v6"></path>
+            </svg>
+          </button>
+
+          <button class="speak-btn" onclick="App.tambahDriver()" style="color: var(--blue); border-color: var(--blue)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Tambah
+          </button>
+          <button class="speak-btn" onclick="App.downloadTemplate()"
+            style="color: var(--text-mid); border-color: var(--border)" title="Download Template Excel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d=" M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <!-- Template -->
+          </button>
+
+          <input type="file" id="file-upload" accept=".xlsx, .xls, .csv" style="display: none"
+            onchange="App.uploadData(event)" />
+          <button class="speak-btn" title="Upload Data Excel" onclick="document.getElementById('file-upload').click()"
+            style="color: var(--green); border-color: var(--green)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d=" M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <polyline points="9 15 12 12 15 15"></polyline>
+            </svg>
+            <!-- Upload Excel -->
+          </button>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="premium-btn btn-refresh" onclick="App.fetchDrivers(true)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+          Refresh Data
+        </button>
+
+        <button class="premium-btn btn-stop" onclick="App.stopAll()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          </svg>
+          Stop All
+        </button>
+
+        <button class="premium-btn btn-clear" onclick="App.hapusSemuaDriver()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+          </svg>
+          Clear Datatable
+        </button>
+
+        <button class="premium-btn btn-panggil" onclick="App.panggilSemuaDriver()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          Panggil Semua
+        </button>
+
+        <select id="repeat-driver" class="premium-btn btn-dropdown">
+          <option value="1">1x Panggilan</option>
+          <option value="2">2x Panggilan</option>
+          <option value="3">3x Panggilan</option>
+        </select>
+      </div>
+
+      <!-- SEARCH INPUT -->
+
+      <div style="padding: 0 0px; margin-bottom: 12px">
+        <div class="box-label" style="margin-bottom: 8px; color: var(--text-mid)">
+          Total Antrian:
+          <span id="total-antrian" style="color: var(--blue); font-weight: 700; font-size: 13px">0</span>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="input-search" class="custom-input"
+            placeholder="🔍 Cari No Mobil / Nama (ex: B 123, Jono)" style="flex: 1" oninput="App.findDriver()" />
+          <button class="speak-btn" onclick="
+                App.resetInput('input-search');
+                App.findDriver();
+              " style="color: var(--text-mid); border-color: var(--border)">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- CONTENT DRIVERS -->
+      <div class="drivers"></div>
+
+      <div class="output-box" style="margin-top: 20px">
+        <div class="box-label">Panggilan Manual</div>
+        <div class="input-wrapper" style="position: relative">
+          <input class="custom-input" id="custom-text-drivers" placeholder="Ketik teks panggilan manual..."
+            style="width: 100%" />
+          <button class="reset-btn" onclick="App.resetInput('custom-text-drivers')" title="Reset">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+              <path d="M10 11v6M14 11v6"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 12px">
+          <select id="repeat-custom-drivers" class="card-select"
+            style="padding: 6px; font-size: 12px; border-color: var(--border)">
+            <option value="1">1x Putar</option>
+            <option value="2">2x Putar</option>
+            <option value="3">3x Putar</option>
+          </select>
+          <button class="call-btn primary" onclick="App.speakCustomDrivers()" style="
+                width: 100%;
+                margin-top: 12px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                margin: 0;
+              ">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+            Panggil Sekarang
+          </button>
+        </div>
+      </div>
+
+      <div class="output-box" style="margin-top: 20px">
+        <div class="box-label">Perintah Suara (Mic)</div>
+        <div class="mic-controls">
+          <button class="mic-btn" id="mic-btn" onclick="Mic.toggle()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+            </svg>
+          </button>
+          <div>
+            <div class="mic-status" id="mic-status">
+              Klik mic untuk mulai dengarkan
+            </div>
+            <div class="mic-transcript" id="mic-transcript">
+              Coba: "panggil B 1234 XY" atau "panggil semua"
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="output-box" style="margin-top: 20px">
+        <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 12px;
+            ">
+          <div class="box-label" style="margin-bottom: 0">
+            Riwayat Panggilan
+          </div>
+          <button class="btn-ghost" onclick="App.clearHistory()" style="
+                padding: 4px 8px;
+                font-size: 10px;
+                color: var(--red);
+                border-color: rgba(239, 68, 68, 0.3);
+              ">
+            Hapus Riwayat
+          </button>
+        </div>
+        <div id="history-container" class="history-list">
+          <div style="
+                font-size: 11px;
+                color: var(--text-dim);
+                text-align: center;
+                padding: 10px;
+              ">
+            Belum ada riwayat panggilan.
+          </div>
+        </div>
+      </div>
+
+      <!-- log -->
+      <div class="output-box" style="margin-top: 20px">
+        <div class="box-label">Log Aktivitas</div>
+        <div class="log log-container" style="margin-top: 0"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-announce">
+      <div class="output-box">
+        <div class="box-label">Template Cepat</div>
+        <div class="kanban-grid">
+          <div class="kanban-card" onclick="
+                App.speakTemplate('Supir harap menunggu sesuai antrian!')
+              ">
+            <div class="kanban-icon" style="
+                  background: rgba(245, 158, 11, 0.05);
+                  border-color: rgba(245, 158, 11, 0.2);
+                ">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="grad-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#fbbf24" />
+                    <stop offset="100%" stop-color="#ea580c" />
+                  </linearGradient>
+                </defs>
+                <circle cx="12" cy="12" r="10" fill="url(#grad-orange)" fill-opacity="0.15" stroke="url(#grad-orange)"
+                  stroke-width="2" />
+                <path d="M12 7V12L15 15" stroke="url(#grad-orange)" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </div>
+            <span>Supir harap menunggu sesuai antrian !</span>
+          </div>
+
+          <div class="kanban-card" onclick="App.speakTemplate('Supir harap bersiap untuk muat!')">
+            <div class="kanban-icon" style="
+                  background: rgba(59, 130, 246, 0.05);
+                  border-color: rgba(59, 130, 246, 0.2);
+                ">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#60a5fa" />
+                    <stop offset="100%" stop-color="#2563eb" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M5 17C5 17.5523 4.55228 18 4 18C3.44772 18 3 17.5523 3 17V7C3 5.89543 3.89543 5 5 5H13C14.1046 5 15 5.89543 15 7V17C15 17.5523 14.5523 18 14 18C13.4477 18 13 17.5523 13 17"
+                  fill="url(#grad-blue)" fill-opacity="0.15" stroke="url(#grad-blue)" stroke-width="2"
+                  stroke-linejoin="round" />
+                <path d="M15 8H19L22 11V17C22 17.5523 21.5523 18 21 18C20.4477 18 20 17.5523 20 17"
+                  stroke="url(#grad-blue)" stroke-width="2" stroke-linejoin="round" />
+                <circle cx="8.5" cy="17.5" r="2.5" stroke="url(#grad-blue)" stroke-width="2" />
+                <circle cx="17.5" cy="17.5" r="2.5" stroke="url(#grad-blue)" stroke-width="2" />
+              </svg>
+            </div>
+            <span>Supir harap bersiap untuk muat!</span>
+          </div>
+
+          <div class="kanban-card" onclick="App.speakTemplate('Supir harap standby di mobil')">
+            <div class="kanban-icon" style="
+                  background: rgba(168, 85, 247, 0.05);
+                  border-color: rgba(168, 85, 247, 0.2);
+                ">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#c084fc" />
+                    <stop offset="100%" stop-color="#7e22ce" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M5 11L7 5H17L19 11M5 11V17C5 17.5523 5.44772 18 6 18H7C7.55228 18 8 17.5523 8 17V16H16V17C16 17.5523 16.4477 18 17 18H18C18.5523 18 19 17.5523 19 17V11M5 11H19"
+                  fill="url(#grad-purple)" fill-opacity="0.15" stroke="url(#grad-purple)" stroke-width="2"
+                  stroke-linejoin="round" />
+                <circle cx="8" cy="13" r="1.5" fill="url(#grad-purple)" />
+                <circle cx="16" cy="13" r="1.5" fill="url(#grad-purple)" />
+              </svg>
+            </div>
+            <span>Supir harap standby di mobil</span>
+          </div>
+
+          <div class="kanban-card" onclick="App.speakTemplate('Patuhi tata tertib perusahaan')">
+            <div class="kanban-icon" style="
+                  background: rgba(239, 68, 68, 0.05);
+                  border-color: rgba(239, 68, 68, 0.2);
+                ">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="grad-red" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#f87171" />
+                    <stop offset="100%" stop-color="#b91c1c" />
+                  </linearGradient>
+                </defs>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="url(#grad-red)" fill-opacity="0.15"
+                  stroke="url(#grad-red)" stroke-width="2" stroke-linejoin="round" />
+                <path d="M9 12l2 2 4-4" stroke="url(#grad-red)" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </div>
+            <span>Patuhi tata tertib perusahaan</span>
+          </div>
+
+          <div class="kanban-card" onclick="
+                App.speakTemplate('Jagalah kebersihan lingkungan kerja !')
+              ">
+            <div class="kanban-icon" style="
+                  background: rgba(16, 185, 129, 0.05);
+                  border-color: rgba(16, 185, 129, 0.2);
+                ">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="grad-green" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#34d399" />
+                    <stop offset="100%" stop-color="#047857" />
+                  </linearGradient>
+                </defs>
+                <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="url(#grad-green)"
+                  fill-opacity="0.15" stroke="url(#grad-green)" stroke-width="2" stroke-linejoin="round" />
+                <path d="M5 5L6 8L9 9L6 10L5 13L4 10L1 9L4 8L5 5Z" fill="url(#grad-green)" stroke="url(#grad-green)"
+                  stroke-width="2" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <span>Jagalah kebersihan lingkungan kerja !</span>
+          </div>
+
+          <div class="kanban-card" onclick="
+                App.speakTemplate(
+                  'Supir yang muatan atau bongkaran sudah selesai harap ke loket WFG!',
+                )
+              ">
+            <div class="kanban-icon" style="
+                  background: rgba(6, 182, 212, 0.05);
+                  border-color: rgba(6, 182, 212, 0.2);
+                ">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="grad-teal" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#22d3ee" />
+                    <stop offset="100%" stop-color="#0369a1" />
+                  </linearGradient>
+                </defs>
+                <path d="M12 21C12 21 19 13.2 19 9C19 5.13401 15.866 2 12 2C8.13401 2 5 5.13401 5 9C5 13.2 12 21 12 21Z"
+                  fill="url(#grad-teal)" fill-opacity="0.15" stroke="url(#grad-teal)" stroke-width="2"
+                  stroke-linejoin="round" />
+                <path d="M9 9L11 11L15 7" stroke="url(#grad-teal)" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </div>
+            <span>Supir yang muatan atau bongkaran sudah selesai harap ke loket
+              WFG!</span>
+          </div>
+          <div class="kanban-card" id="admin-timer-settings">
+            <div style="
+                  font-size: 12px;
+                  font-weight: bold;
+                  color: var(--blue);
+                  width: 100%;
+                  text-align: center;
+                  margin-bottom: 4px;
+                ">
+              ⏰ Auto - Voice (Timer)
+            </div>
+            <!-- for server -->
+            <div id="timer-lock-note" style="
+                  display: none;
+                  color: var(--text-muted);
+                  font-size: 11px;
+                  font-style: italic;
+                  background: rgba(0, 0, 0, 0.05);
+                  padding: 4px 8px;
+                  border-radius: 4px;
+                  width: 100%;
+                  text-align: center;
+                  box-sizing: border-box;
+                ">
+              🔒 Hanya dapat diubah dari PC Server. -> https://localhost:8800
+            </div>
+            <!-- end for server -->
+
+            <select id="timer-select" class="card-select" style="width: 100%; font-size: 11px">
+              <option value="1">1 Jam Lagi</option>
+              <option value="2">2 Jam Lagi</option>
+              <option value="3">3 Jam Lagi</option>
+            </select>
+
+            <textarea id="timer-text" class="custom-input" rows="4" style="
+                  width: 100%;
+                  font-size: 11px;
+                  padding: 8px;
+                  resize: vertical;
+                  line-height: 1.4;
+                ">
+            </textarea>
+
+            <div id="timer-countdown" style="
+                  display: none;
+                  font-size: 11px;
+                  font-weight: bold;
+                  color: #ff9800;
+                  width: 100%;
+                  text-align: center;
+                  margin-top: 2px;
+                ">
+              ⏳ Sisa Waktu: 00:00:00
+            </div>
+
+            <div style="display: flex; gap: 4px; width: 100%">
+              <button class="speak-btn" id="btn-set-timer" onclick="App.scheduleAnnouncement()" style="
+                    flex: 1;
+                    padding: 6px 8px;
+                    font-size: 11px;
+                    color: var(--green);
+                    border-color: var(--green);
+                  ">
+                Setel Timer
+              </button>
+
+              <button id="btn-pause-timer" class="speak-btn" onclick="App.togglePauseAnnouncement()" style="
+                    display: none;
+                    padding: 6px 12px;
+                    font-size: 11px;
+                    color: #ff9800;
+                    border-color: var(--border);
+                  " title="Pause/Resume Timer">
+                ⏸ Pause
+              </button>
+
+              <button class="speak-btn" id="btn-cancel-timer" onclick="App.cancelAnnouncement()" style="
+                    padding: 6px 12px;
+                    font-size: 11px;
+                    color: var(--red);
+                    border-color: var(--border);
+                  " title="Batalkan Timer">
+                ❌ Batal
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ANNOUNCE -->
+      <div class="output-box">
+        <div class="box-label">Pengumuman Custom</div>
+
+        <div class="input-wrapper" style="position: relative">
+          <textarea class="custom-input" id="custom-text" rows="4" placeholder="Ketik pengumuman khusus di sini..."
+            style="resize: vertical; padding: 12px; width: 100%"></textarea>
+          <button class="reset-btn" onclick="App.resetInput('custom-text')" title="Clear Textarea"
+            style="top: 20px; right: 12px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+              <path d="M10 11v6M14 11v6"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 8px">
+          <select id="repeat-custom" class="card-select"
+            style="padding: 6px; font-size: 12px; border-color: var(--border)">
+            <option value="1">1x Putar</option>
+            <option value="2">2x Putar</option>
+            <option value="3">3x Putar</option>
+          </select>
+
+          <button class="call-btn primary" onclick="App.speakCustom()" style="
+                width: 100%;
+                margin-top: 12px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                margin: 0;
+              ">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"
+              style="margin-right: 4px">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+            Siarkan Pengumuman
+          </button>
+        </div>
+      </div>
+
+      <div class="output-box" style="margin-top: 20px">
+        <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 12px;
+            ">
+          <div class="box-label" style="margin-bottom: 0">
+            Riwayat Pengumuman
+          </div>
+          <button class="btn-ghost" onclick="App.clearHistory()" style="
+                padding: 4px 8px;
+                font-size: 10px;
+                color: var(--red);
+                border-color: rgba(239, 68, 68, 0.3);
+              ">
+            Hapus Riwayat
+          </button>
+        </div>
+        <div id="history-container-announce" class="history-list">
+          <div style="
+                font-size: 11px;
+                color: var(--text-dim);
+                text-align: center;
+                padding: 10px;
+              ">
+            Belum ada riwayat pengumuman.
+          </div>
+        </div>
+      </div>
+
+      <div class="output-box">
+        <div class="box-label">Log Aktivitas</div>
+        <div class="log log-container" style="margin-top: 0"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-settings">
+      <div class="output-box">
+        <div class="box-label">System Info</div>
+        <div class="setting-row" style="border-bottom: 1px solid var(--border); padding-bottom: 12px">
+          <div class="setting-label-text">Operator Active</div>
+          <div style="
+                flex: 1;
+                text-align: right;
+                font-size: 12px;
+                color: var(--text);
+                font-weight: 600;
+              ">
+            Admin (SYS-01)
+          </div>
+        </div>
+        <div class="setting-row" style="border-bottom: 1px solid var(--border); padding-bottom: 12px">
+          <div class="setting-label-text">Versi Aplikasi</div>
+          <div style="
+                flex: 1;
+                text-align: right;
+                font-size: 12px;
+                color: var(--text-mid);
+              ">
+            RIYU.CONSOLE v1.0.0
+          </div>
+        </div>
+        <div class="setting-row" style="border-bottom: 1px solid var(--border); padding-bottom: 12px">
+          <div class="setting-label-text">Client Environment</div>
+          <div id="sys-client" style="
+                flex: 1;
+                text-align: right;
+                font-size: 11px;
+                color: var(--text-mid);
+              ">
+            Mendeteksi...
+          </div>
+        </div>
+        <div class="setting-row" style="border-bottom: 1px solid var(--border); padding-bottom: 12px">
+          <div class="setting-label-text">Speech Recognition (Mic)</div>
+          <div id="sys-mic" style="
+                flex: 1;
+                text-align: right;
+                font-size: 11px;
+                color: var(--text-mid);
+              ">
+            Mendeteksi...
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label-text">Edge TTS Engine (Backend)</div>
+          <div id="sys-tts" style="
+                flex: 1;
+                text-align: right;
+                font-size: 11px;
+                color: var(--text-mid);
+              ">
+            Menghubungkan...
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label-text">Database Connection</div>
+          <div id="sys-db" style="
+                flex: 1;
+                text-align: right;
+                font-size: 11px;
+                color: var(--text-mid);
+              ">
+            Menghubungkan...
+          </div>
+        </div>
+      </div>
+
+      <!-- SISTEM AUDIO -->
+      <div class="output-box" style="margin-top: 20px">
+        <div class="box-label">Sistem & Audio</div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap">
+          <button class="premium-btn btn-blue" onclick="App.testSpeaker()" style="flex: 1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            Test Speaker
+          </button>
+
+          <button class="premium-btn btn-refresh" onclick="App.refreshTTS()" style="flex: 1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            Refresh Sistem
+          </button>
+
+          <button class="premium-btn btn-orange" onclick="App.reconnectDatabase()" style="flex: 1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="margin-right: 4px">
+              <path d="M21.5 2v6h-6M2.13 15.57a9 9 0 1 0 3.87-11.1l-4.8 2.53"></path>
+            </svg>
+            Reconnect DB
+          </button>
+        </div>
+      </div>
+
+      <!-- END -->
+
+      <div class="output-box" id="admin-voice-settings">
+        <div style="
+              display: flex;
+              align-items: center;
+              width: 100%;
+              margin-bottom: 12px;
+            ">
+          <span class="box-label" style="margin-bottom: 0; white-space: nowrap; margin-right: 12px">Pengaturan
+            Suara</span>
+          <div style="
+                flex: 1;
+                height: 1px;
+                background-color: var(--border, rgba(255, 255, 255, 0.1));
+              "></div>
+          <button class="btn-ghost" onclick="App.resetVoiceSettings()" style="
+                padding: 4px 8px;
+                font-size: 11px;
+                cursor: pointer;
+                margin-left: 12px;
+                white-space: nowrap;
+              " title="Kembalikan ke Default">
+            🔄 Reset
+          </button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-label-text">Suara</div>
+          <select class="voice-select" id="voice-select"></select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label-text">Volume</div>
+          <input type="range" id="vol" min="0" max="100" step="1" value="100" />
+          <div class="setting-val" id="vol-val">100%</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label-text">Kecepatan</div>
+          <input type="range" id="rate" min="0.2" max="3" step="0.1" value="0.9" />
+          <div class="setting-val" id="rate-val">0.9x</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label-text">Nada (Pitch)</div>
+          <input type="range" id="pitch" min="-50" max="50" step="1" value="10" />
+          <div class="setting-val" id="pitch-val">+10Hz</div>
+        </div>
+      </div>
+
+      <div class="output-box" style="margin-top: 20px">
+        <div class="box-label">About App</div>
+        <div style="font-size: 12px; color: var(--text-mid); line-height: 1.6">
+          <strong>(RIYU.CONSOLE Driver Calling System)</strong><br />
+          Aplikasi manajemen antrean armada cerdas berbasis web. Dilengkapi
+          dengan integrasi <i>Text-to-Speech</i>, penerjemah multi-bahasa
+          otomatis, dan antarmuka responsif untuk mempercepat alur kerja
+          Warehouse. <br /><br />
+          <div style="
+                display: flex;
+                justify-content: space-between;
+                border-top: 1px solid var(--border);
+                padding-top: 8px;
+                margin-top: 4px;
+              ">
+            <span>Versi Aplikasi</span>
+            <span style="color: var(--text)">v1.0.0</span>
+          </div>
+          <div style="display: flex; justify-content: space-between">
+            <span>Lisensi</span>
+            <span style="color: var(--text)">Internal Use Only</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="driver-modal" onclick="App.tutupModal(event)">
+    <div class="modal">
+      <div class="modal-title">Edit Armada</div>
+      <div class="form-field">
+        <label class="form-label">Vendor / Nama</label><input class="form-input" id="modal-vendor" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">No. Mobil</label><input class="form-input" id="modal-no-mobil" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="App.tutupModal(null, true)">
+          Batal
+        </button>
+        <button class="call-btn primary" onclick="App.simpanEditDriver()">
+          Update
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll top -->
+  <button id="scroll-top-btn" class="scroll-top-btn" onclick="App.scrollToTop()" title="Ke Atas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
+
+  <script src="assets/js/min/sweetalert2.all.min.js"></script>
+  <script src="assets/js/min/xlsx.full.min.js"></script>
+
+  <script src="assets/js/bundle.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+   <div class="output-box">
+        <div class="box-label">Pengaturan Suara </div>
+        <div class="setting-row">
+          <div class="setting-label-text">Suara</div>
+          <select class="voice-select" id="voice-select"></select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label-text">Volume</div>
+          <input type="range" id="vol" min="0" max="100" step="1" value="100" />
+          <div class="setting-val" id="vol-val">100%</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label-text">Kecepatan</div>
+          <input type="range" id="rate" min="0.2" max="3" step="0.1" value="0.9" />
+          <div class="setting-val" id="rate-val">0.9x</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label-text">Nada (Pitch)</div>
+          <input type="range" id="pitch" min="-50" max="50" step="1" value="0" />
+          <div class="setting-val" id="pitch-val">0Hz</div>
+        </div>
+      </div>

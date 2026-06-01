@@ -1,0 +1,16 @@
+  // ── SETTINGS ─────────────────────────────────────
+  function initSettings() {
+    document.getElementById("vol").addEventListener("input", function () {
+      document.getElementById("vol-val").textContent =
+        Math.round(this.value) + "%";
+    });
+    document.getElementById("rate").addEventListener("input", function () {
+      document.getElementById("rate-val").textContent =
+        parseFloat(this.value).toFixed(1) + "x";
+    });
+    // --- Tambahkan Pitch Listener ---
+    document.getElementById("pitch").addEventListener("input", function () {
+      document.getElementById("pitch-val").textContent =
+        (this.value >= 0 ? "+" : "") + this.value + "Hz";
+    });
+  }

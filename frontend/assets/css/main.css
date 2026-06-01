@@ -1,0 +1,538 @@
+/* ── FONT BARLOW ── */
+/* Barlow ExtraBold (Weight 800) */
+@font-face {
+  font-family: "Barlow";
+  src: url("../fonts/Barlow-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+}
+
+/* Barlow Black (Weight 900) */
+@font-face {
+  font-family: "Barlow";
+  src: url("../fonts/Barlow-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
+/* ── FONT JETBRAINS MONO ── */
+
+/* JetBrains Mono Regular (Weight 400) */
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("../fonts/JetBrainsMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* JetBrains Mono SemiBold (Weight 600) */
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("../fonts/JetBrainsMono-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* JetBrains Mono Bold (Weight 700) */
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("../fonts/JetBrainsMono-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* ── RESET & ROOT VARIABLES ─────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* initialize all */
+:root {
+  --bg: #0b0d10;
+  --bg2: #101318;
+  --bg3: #151920;
+  --bg4: #1a1f28;
+  --border: #1e2530;
+  --border2: #252d3a;
+  --blue: #3b82f6;
+  --blue-dim: rgba(59, 130, 246, 0.12);
+  --blue-glow: rgba(59, 130, 246, 0.5);
+  --green: #10b981;
+  --green-dim: rgba(16, 185, 129, 0.12);
+  --red: #ef4444;
+  --red-dim: rgba(239, 68, 68, 0.12);
+  --yellow: #f59e0b;
+  --text: #e8edf5;
+  --text-mid: #6b7a94;
+  --text-dim: #3d4a5c;
+  --mono: "JetBrains Mono", monospace;
+  --head: "Barlow", sans-serif;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  min-height: 100vh;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 32px 24px 64px;
+}
+
+.app {
+  width: 100%;
+  max-width: 950px;
+  margin: 0 auto;
+}
+
+/* ── SCROLLBAR ───────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg2);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 2px;
+}
+
+/* ── TABS NAVIGATION ─────────────────────────────── */
+.tabnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+
+  position: sticky;
+  top: 0;
+  z-index: 100; /* Pastikan selalu di atas kartu supir */
+
+  background-color: var(--bg-main);
+  /* Jarak awal navbar */
+  border-radius: 0px;
+  margin: 0;
+  padding: 10px 0px;
+
+  /* Transisi super smooth untuk semua perubahan parameter */
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.tabnav.is-sticky {
+  background-color: var(--bg-card);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  margin: 10px 15px 0 15px;
+  padding: 12px 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  /* background-color: var(--bg); */
+  /* box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);  */
+}
+
+/* end tabnav */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg2);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  color: var(--text-mid);
+}
+.tab svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+}
+.tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.tab.active svg {
+  opacity: 1;
+}
+.tab:not(.active):hover {
+  background: var(--bg3);
+  color: var(--text);
+  border-color: var(--border2);
+}
+
+/* ── PANELS ──────────────────────────────────────── */
+.panel {
+  display: none;
+  animation: fadeUp 0.25s ease;
+}
+.panel.active {
+  display: block;
+}
+
+/* ── KANBAN GRID (TEMPLATE CEPAT) ────────────────── */
+.kanban-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.kanban-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.kanban-card:hover {
+  border-color: var(--blue);
+  box-shadow: 0 4px 20px var(--blue-glow);
+  transform: translateY(-2px);
+}
+.kanban-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--blue);
+}
+.kanban-icon svg {
+  width: 16px;
+  height: 16px;
+}
+.kanban-card span {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* ── SYS ONLINE BADGE ────────────────────────────── */
+.sys-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--text-mid);
+}
+
+.sys-badge svg {
+  color: var(--green);
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.sys-online {
+  color: var(--green);
+  font-weight: 700;
+  animation: textPulseGlow 2s ease-in-out infinite;
+}
+
+/* Animasi untuk Icon Waveform (Shadow SVG) */
+@keyframes pulseGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px rgba(16, 185, 129, 0.3));
+    opacity: 0.7;
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(16, 185, 129, 1));
+    opacity: 1;
+  }
+}
+
+/* Animasi untuk Teks "ONLINE" (Text Shadow) */
+@keyframes textPulseGlow {
+  0%,
+  100% {
+    text-shadow: 0 0 4px rgba(16, 185, 129, 0.2);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(16, 185, 129, 0.9);
+  }
+}
+
+/* ── RESET INPUT BUTTON ──────────────────────────── */
+.reset-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  transition:
+    color 0.2s,
+    transform 0.1s;
+  z-index: 5;
+}
+
+.reset-btn:hover {
+  color: var(--red);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.reset-btn:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
+/* Pastikan input tidak tertutup teks oleh tombol */
+.input-wrapper .custom-input {
+  padding-right: 35px !important;
+}
+
+/* ── RESPONSIVE / MOBILE ────────────────────────── */
+@media (max-width: 600px) {
+  /* 1. Base Layout & Typography */
+  body {
+    padding: 16px 12px 32px;
+  }
+  h1 {
+    font-size: 36px;
+  }
+  .subtitle {
+    font-size: 11px;
+    margin-bottom: 24px;
+  }
+
+  /* 2. Header & Badge */
+  .tabnav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .sys-badge {
+    justify-content: flex-end;
+  }
+  .tabs {
+    width: 100%;
+  }
+  .tab {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 4px;
+    font-size: 11px;
+  }
+
+  /* 3. Input Tambah Kendaraan */
+  .custom-section {
+    flex-direction: column;
+  }
+  .input-wrapper,
+  .custom-section .custom-input,
+  .custom-section .speak-btn {
+    width: 100%;
+  }
+  .custom-section .speak-btn {
+    justify-content: center;
+  }
+
+  /* 4. Driver Cards (Tampilan Armada) */
+  .driver-card {
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .driver-info {
+    flex: 1;
+    min-width: 100px;
+  }
+  /* Posisikan badge status di pojok kanan atas kartu */
+  .driver-status {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+  }
+  /* Pindahkan tombol aksi (Panggil/Edit) ke baris baru */
+  .actions {
+    width: 100%;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 4px;
+    justify-content: space-between;
+  }
+
+  /* 5. Header Antrian (Total Antrian & Tombol Panggil Semua) */
+  #panel-drivers > div:nth-child(2) {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+  #panel-drivers > div:nth-child(2) > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+  }
+  #panel-drivers > div:nth-child(2) > div:last-child button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* 6. Kanban Grid (Tab Announce) */
+  .kanban-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* 7. Settings Row (Tab Settings & Info) */
+  .setting-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .setting-label-text {
+    width: 100%;
+  }
+  .setting-row > div:nth-child(2),
+  .setting-val {
+    width: 100%;
+    text-align: left !important;
+  }
+  .setting-row input[type="range"] {
+    width: 100%;
+  }
+
+  /* 8. Modal Edit Ukuran HP */
+  .modal {
+    width: 90%;
+    padding: 20px;
+  }
+}
+
+/* ── CUSTOM SWEETALERT UNTUK TEMA APLIKASI ── */
+.swal2-popup {
+  border: 1px solid var(--border) !important; /* Biar ada garis tepi samar seperti kartu supir */
+  border-radius: 12px !important; /* Biar ujungnya melengkung rapi */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important; /* Efek bayangan elegan */
+}
+
+/* ── MODE SIANG (LIGHT MODE) ── */
+body.light-mode {
+  /* Ganti warna background jadi terang */
+  --bg-dark: #f0f2f5;
+  --panel-bg: #ffffff;
+
+  /* Ganti warna teks jadi gelap */
+  --text-light: #1a1a1a;
+  --text-mid: #555555;
+
+  /* Sesuaikan warna garis batas (border) */
+  --border: #cccccc;
+
+  /* Sesuaikan warna input box */
+  --input-bg: #f9f9f9;
+}
+
+/* Sedikit penyesuaian untuk ikon/tombol di mode siang */
+body.light-mode .card,
+body.light-mode .panel {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Tambah bayangan lembut biar elegan */
+}
+
+/* Tombol ganti tema (untuk header) */
+.theme-toggle-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-light);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.theme-toggle-btn:hover {
+  background: var(--border);
+}
+
+/* ── WARNA IKON TEMA (DEFAULT: MALAM = PUTIH) ── */
+.theme-toggle-btn svg {
+  stroke: #ffffff; /* Bikin ikon jadi putih */
+}
+
+.theme-toggle-btn:hover svg {
+  stroke: #1a1a1a; /* Bikin ikon jadi gelap saat background terang */
+}
+
+/* ── SCROLL TO TOP BUTTON ── */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(
+    --primary,
+    #007bff
+  ); /* Warnanya ngikutin tema utama web lu */
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5); /* Shadow dipertegas */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  /* transition: all 0.3s ease; */
+  z-index: 99999 !important;
+}
+
+/* Class ini ditambahkan otomatis via JavaScript pas layar turun */
+.scroll-top-btn.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.scroll-top-btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-5px); /* Efek lompat dikit pas disentuh mouse */
+}
+
+#admin-timer-settings {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+  cursor: default;
+  height: auto;
+  grid-column: 1 / -1; /* INI KUNCI BIAR FULL KANAN KIRI */
+  width: 100%; /* MEMASTIKAN LEBARNYA MAKSIMAL */
+}

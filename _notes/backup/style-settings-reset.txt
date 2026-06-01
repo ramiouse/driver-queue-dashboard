@@ -1,0 +1,8 @@
+ <!-- <div class="box-label"
+          style="display: flex; margin-bottom: 12px;  justify-content: space-between; align-items: center; margin-bottom: 0;">
+          <span>Pengaturan Suara</span>
+          <button class="btn-ghost" onclick="App.resetVoiceSettings()"
+            style="padding: 4px 8px; font-size: 11px; cursor: pointer;" title="Kembalikan ke Default">
+            🔄 Reset
+          </button>
+        </div> -->

@@ -1,0 +1,18 @@
+# Mengabaikan file Environment (Sangat Penting!)
+backend/.env
+
+# Mengabaikan cache dari Edge TTS di folder audio
+audio/*
+!audio/.gitkeep 
+# (Catatan: Baris !audio/.gitkeep gunanya biar foldernya tetep ke-upload ke GitHub, tapi isinya kosong)
+
+# Mengabaikan file bawaan Python & FastAPI
+backend/__pycache__/
+backend/*.pyc
+backend/.venv/
+backend/venv/
+backend/env/
+
+# Mengabaikan file sistem OS (Mac/Windows)
+.DS_Store
+Thumbs.db

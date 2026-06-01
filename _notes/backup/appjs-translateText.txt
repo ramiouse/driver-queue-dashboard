@@ -1,0 +1,17 @@
+// --- LOGIKA TEMPLATE OTOMATIS ---
+    let msg = "";
+    if (isEnglish) {
+      // TEMPLATE INGGRIS
+      if (jenis === "supir") {
+        msg = `Calling driver, license plate ${noMobilEja}, please proceed to counter W-F-G.`;
+      } else if (jenis === "loading") {
+        msg = `Driver with license plate ${noMobilEja}, please enter the lodingan area W-F-G.`;
+      }
+    } else {
+      // TEMPLATE INDONESIA (Default)
+      if (jenis === "supir") {
+        msg = `Panggilan kepada supir, plat nomor ${noMobilEja}, untuk ke loket W-F-G.`;
+      } else if (jenis === "loading") {
+        msg = `Supir dengan plat nomor ${noMobilEja}, harap masuk ke lodingan W-F-G.`;
+      }
+    }

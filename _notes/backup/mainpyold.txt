@@ -1,0 +1,110 @@
+import os
+import uuid
+import asyncio
+import edge_tts
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# ── CONFIG ──────────────────────────────────────────
+PORT      = int(os.getenv("PORT", 8888))
+AUDIO_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../audio"))
+os.makedirs(AUDIO_DIR, exist_ok=True)
+
+# ── APP ─────────────────────────────────────────────
+app = FastAPI(title="Driver Call API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Paths
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../frontend"))
+ASSETS_DIR   = os.path.join(FRONTEND_DIR, "assets")
+
+# Serve audio files
+app.mount("/audio", StaticFiles(directory=AUDIO_DIR), name="audio")
+
+# Serve frontend assets (CSS & JS)
+app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
+
+
+# ── MODELS ──────────────────────────────────────────
+class TTSRequest(BaseModel):
+    text: str
+    voice: str = "id-ID-ArdiNeural"   # default: laki-laki Indonesia
+    rate: str  = "+0%"                 # e.g. "+10%", "-20%"
+    volume: str = "+0%"               # e.g. "+50%"
+    pitch: str  = "+0Hz"              # e.g. "+5Hz"
+
+
+# ── AVAILABLE VOICES ────────────────────────────────
+@app.get("/api/voices")
+async def get_voices():
+    voices = await edge_tts.list_voices()
+    # Filter Indonesian + English
+    filtered = [
+        {"name": v["Name"], "short": v["ShortName"], "gender": v["Gender"], "lang": v["Locale"]}
+        for v in voices
+        if v["Locale"].startswith("id") or v["Locale"].startswith("en")
+    ]
+    return {"voices": filtered}
+
+
+# ── TTS ENDPOINT ────────────────────────────────────
+@app.post("/api/tts")
+async def text_to_speech(req: TTSRequest):
+    if not req.text.strip():
+        raise HTTPException(status_code=400, detail="Text cannot be empty")
+
+    # Generate unique filename
+    filename = f"{uuid.uuid4().hex}.mp3"
+    filepath = os.path.join(AUDIO_DIR, filename)
+
+    try:
+        communicate = edge_tts.Communicate(
+            text=req.text,
+            voice=req.voice,
+            rate=req.rate,
+            volume=req.volume,
+            pitch=req.pitch,
+        )
+        await communicate.save(filepath)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TTS error: {str(e)}")
+
+    # Clean up old audio files (keep max 20)
+    cleanup_audio(AUDIO_DIR)
+
+    return {"url": f"/audio/{filename}", "filename": filename}
+
+
+# ── CLEANUP OLD AUDIO ───────────────────────────────
+def cleanup_audio(directory: str, max_files: int = 20):
+    files = sorted(
+        [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith(".mp3")],
+        key=os.path.getmtime
+    )
+    while len(files) > max_files:
+        os.remove(files.pop(0))
+
+
+# ── SERVE FRONTEND ──────────────────────────────────
+@app.get("/")
+async def root():
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+
+# ── RUN ─────────────────────────────────────────────
+if __name__ == "__main__":
+    import uvicorn
+    print(f"\n✅  Driver Call Server running at http://localhost:{PORT}\n")
+    uvicorn.run("main:app", host="0.0.0.0", port=PORT, reload=True)

@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA.CONSOLE / V1.0</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@500;600;700&display=swap');
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0d0f12;
+      --bg2: #131619;
+      --bg3: #181c20;
+      --border: #222730;
+      --blue: #3d7cff;
+      --blue-dim: #1e3a6e;
+      --text: #e2e8f0;
+      --text-dim: #5a6478;
+      --text-mid: #8a95a8;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --mono: 'JetBrains Mono', monospace;
+      --head: 'Rajdhani', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--head);
+      min-height: 100vh;
+      padding: 36px 48px 60px;
+    }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--blue);
+      letter-spacing: .08em;
+      margin-bottom: 16px;
+    }
+
+    .breadcrumb span {
+      color: var(--text-dim);
+    }
+
+    /* ── TITLE ── */
+    h1 {
+      font-family: var(--head);
+      font-size: 52px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 12px;
+      letter-spacing: -.5px;
+    }
+
+    h1 .slash {
+      color: var(--blue);
+    }
+
+    .subtitle {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-mid);
+      line-height: 1.6;
+      max-width: 520px;
+      margin-bottom: 40px;
+    }
+
+    /* ── STAT CARDS ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 22px 24px 20px;
+      transition: border-color .2s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--blue-dim);
+    }
+
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .12em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--blue);
+      line-height: 1;
+    }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      gap: 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+
+    .tab {
+      font-family: var(--head);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-dim);
+      padding-bottom: 12px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      letter-spacing: .03em;
+      transition: color .2s;
+    }
+
+    .tab.active {
+      color: var(--text);
+      border-bottom-color: var(--blue);
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--text-mid);
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px 32px;
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .panel-title {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .panel-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--blue);
+      margin-top: 4px;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 11px 22px;
+      font-family: var(--head);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: .03em;
+      white-space: nowrap;
+      transition: background .15s, transform .1s;
+    }
+
+    .btn-primary:hover {
+      background: #2d6af0;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    /* ── TABLE ── */
+    .table-header {
+      display: grid;
+      grid-template-columns: 1fr 200px 180px 140px;
+      padding: 0 0 12px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .12em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .user-row {
+      display: grid;
+      grid-template-columns: 1fr 200px 180px 140px;
+      align-items: center;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+
+    .user-row:last-child {
+      border-bottom: none;
+    }
+
+    .user-row:hover {
+      background: rgba(61, 124, 255, .04);
+      margin: 0 -32px;
+      padding: 18px 32px;
+    }
+
+    .operator {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 6px;
+      background: var(--blue-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--blue);
+      flex-shrink: 0;
+      letter-spacing: .04em;
+    }
+
+    .op-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .op-email {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .badge {
+      display: inline-block;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .1em;
+      color: var(--text-mid);
+      text-transform: uppercase;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot.active {
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    .dot.pending {
+      background: var(--yellow);
+      box-shadow: 0 0 6px var(--yellow);
+    }
+
+    .dot.inactive {
+      background: var(--text-dim);
+    }
+
+    .action-btn {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .08em;
+      color: var(--text-dim);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color .15s;
+      padding: 4px 0;
+    }
+
+    .action-btn:hover {
+      color: #ef4444;
+    }
+
+    /* ── PRODUCTS PANEL ── */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .product-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      transition: border-color .2s;
+    }
+
+    .product-card:hover {
+      border-color: var(--blue-dim);
+    }
+
+    .product-sku {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--blue);
+      letter-spacing: .1em;
+      margin-bottom: 8px;
+    }
+
+    .product-name {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .product-stock {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .product-stock span {
+      color: var(--green);
+    }
+
+    /* ── SETTINGS PANEL ── */
+    .settings-group {
+      margin-bottom: 28px;
+    }
+
+    .settings-group-title {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .14em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(34, 39, 48, .6);
+    }
+
+    .setting-row:last-child {
+      border-bottom: none;
+    }
+
+    .setting-label {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .setting-desc {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .toggle {
+      width: 44px;
+      height: 24px;
+      background: var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+
+    .toggle.on {
+      background: var(--blue);
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .2s;
+    }
+
+    .toggle.on::after {
+      transform: translateX(20px);
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      width: 420px;
+      animation: fadeUp .2s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .form-field {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .12em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .form-input:focus {
+      border-color: var(--blue);
+    }
+
+    .form-select {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      justify-content: flex-end;
+    }
+
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 20px;
+      color: var(--text-mid);
+      font-family: var(--head);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--text-mid);
+      color: var(--text);
+    }
+
+    /* ── GLOBE INDICATOR ── */
+    .globe {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: .7;
+    }
+
+    .globe::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1.5px solid var(--blue);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="breadcrumb animate-pulse">&gt; NOVA.CONSOLE <span>/ V1.0</span></div>
+
+  <h1>Operations <span class="slash">/Workbench_</span></h1>
+  <p class="subtitle">Three synchronized surfaces — users, products, and system preferences — wired to live data with
+    smooth interaction.</p>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total Users</div>
+      <div class="stat-value" id="total-users">11</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Sessions</div>
+      <div class="stat-value">7</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Registry SKUs</div>
+      <div class="stat-value">12</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Global Stock</div>
+      <div class="stat-value">8</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('users', this)">Users</div>
+    <div class="tab" onclick="switchTab('products', this)">Products</div>
+    <div class="tab" onclick="switchTab('settings', this)">Settings</div>
+  </div>
+
+  <!-- USERS PANEL -->
+  <div class="panel active" id="panel-users">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Users Directory</div>
+        <div class="panel-sub">// operators with workspace access</div>
+      </div>
+      <button class="btn-primary" onclick="openModal()">+ New User</button>
+    </div>
+
+    <div class="table-header">
+      <div>Operator</div>
+      <div>Role</div>
+      <div>Status</div>
+      <div>Actions</div>
+    </div>
+
+    <div id="user-list"></div>
+  </div>
+
+  <!-- PRODUCTS PANEL -->
+  <div class="panel" id="panel-products">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Product Registry</div>
+        <div class="panel-sub">// managed SKUs in global registry</div>
+      </div>
+      <button class="btn-primary">+ New SKU</button>
+    </div>
+    <div class="product-grid">
+      <div class="product-card">
+        <div class="product-sku">SKU-0012</div>
+        <div class="product-name">Nova Core Engine</div>
+        <div class="product-stock">Stock: <span>24 units</span></div>
+      </div>
+      <div class="product-card">
+        <div class="product-sku">SKU-0031</div>
+        <div class="product-name">Relay Module X</div>
+        <div class="product-stock">Stock: <span>8 units</span></div>
+      </div>
+      <div class="product-card">
+        <div class="product-sku">SKU-0044</div>
+        <div class="product-name">Edge Processor</div>
+        <div class="product-stock">Stock: <span>0 units</span></div>
+      </div>
+      <div class="product-card">
+        <div class="product-sku">SKU-0057</div>
+        <div class="product-name">Console Bridge v2</div>
+        <div class="product-stock">Stock: <span>15 units</span></div>
+      </div>
+      <div class="product-card">
+        <div class="product-sku">SKU-0063</div>
+        <div class="product-name">Signal Array</div>
+        <div class="product-stock">Stock: <span>3 units</span></div>
+      </div>
+      <div class="product-card">
+        <div class="product-sku">SKU-0071</div>
+        <div class="product-name">Patch Kit Alpha</div>
+        <div class="product-stock">Stock: <span>41 units</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div class="panel" id="panel-settings">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">System Preferences</div>
+        <div class="panel-sub">// global workspace configuration</div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-title">Access Control</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Two-Factor Auth</div>
+          <div class="setting-desc">Require 2FA for all operators</div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Session Expiry</div>
+          <div class="setting-desc">Auto-expire inactive sessions after 30m</div>
+        </div>
+        <div class="toggle" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-title">Notifications</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Audit Logs</div>
+          <div class="setting-desc">Stream real-time audit events</div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Stock Alerts</div>
+          <div class="setting-desc">Notify when SKU stock falls below threshold</div>
+        </div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-title">Add New Operator</div>
+      <div class="form-field">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" type="text" placeholder="e.g. Alex Rivera" id="input-name" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" placeholder="e.g. alex@nova.io" id="input-email" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Role</label>
+        <select class="form-select" id="input-role">
+          <option>Developer</option>
+          <option>Editor</option>
+          <option>Viewer</option>
+          <option>Admin</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="addUser()">Create Operator</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="globe"></div>
+
+  <script>
+    let users = [
+      {initials: 'MA', name: 'Marcus Vidal', email: 'marcus.v@nova.io', role: 'Developer', status: 'Active'},
+      {initials: 'PR', name: 'Priya Sharma', email: 'priya@nova.io', role: 'Editor', status: 'Pending'},
+      {initials: 'JK', name: 'Jordan Kim', email: 'j.kim@nova.io', role: 'Viewer', status: 'Active'},
+      {initials: 'AL', name: 'Alex Lowe', email: 'alowe@nova.io', role: 'Admin', status: 'Active'},
+      {initials: 'SC', name: 'Sara Chen', email: 's.chen@nova.io', role: 'Editor', status: 'Inactive'},
+    ];
+
+    function getInitials(name) {
+      return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    function renderUsers() {
+      const list = document.getElementById('user-list');
+      list.innerHTML = users.map((u, i) => `
+    <div class="user-row">
+      <div class="operator">
+        <div class="avatar">${u.initials}</div>
+        <div>
+          <div class="op-name">${u.name}</div>
+          <div class="op-email">${u.email}</div>
+        </div>
+      </div>
+      <div><span class="badge">${u.role}</span></div>
+      <div class="status">
+        <span class="dot ${u.status.toLowerCase()}"></span>
+        ${u.status}
+      </div>
+      <div>
+        <button class="action-btn" onclick="deleteUser(${i})">[ DELETE ]</button>
+      </div>
+    </div>
+  `).join('');
+      document.getElementById('total-users').textContent = users.length;
+    }
+
+    function deleteUser(i) {
+      users.splice(i, 1);
+      renderUsers();
+    }
+
+    function switchTab(name, el) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('panel-' + name).classList.add('active');
+    }
+
+    function openModal() {
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+    }
+
+    function addUser() {
+      const name = document.getElementById('input-name').value.trim();
+      const email = document.getElementById('input-email').value.trim();
+      const role = document.getElementById('input-role').value;
+      if (!name || !email) return;
+      users.push({initials: getInitials(name), name, email, role, status: 'Pending'});
+      renderUsers();
+      closeModal();
+      document.getElementById('input-name').value = '';
+      document.getElementById('input-email').value = '';
+    }
+
+    document.getElementById('modal').addEventListener('click', function (e) {
+      if (e.target === this) closeModal();
+    });
+
+    renderUsers();
+  </script>
+</body>
+</html>

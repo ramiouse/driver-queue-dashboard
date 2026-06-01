@@ -1,0 +1,154 @@
+let announcementTimer = null;
+  let countdownInterval = null;
+
+  function scheduleAnnouncement(isRestoring = false) {
+    const selectEl = document.getElementById("timer-select");
+    const textEl = document.getElementById("timer-text");
+    const countdownEl = document.getElementById("timer-countdown");
+
+    let text = "";
+    let endTime = 0;
+    let selectedHours = 1; // Default interval
+
+    if (isRestoring) {
+      // 1. AMBIL DATA DARI MEMORI BROWSER (Saat Refresh Halaman)
+      const savedData = JSON.parse(localStorage.getItem("autoTimerData"));
+      if (!savedData) return;
+
+      text = savedData.text;
+      endTime = savedData.endTime;
+      selectedHours = savedData.hours || 1;
+
+      if (textEl) textEl.value = text;
+      if (selectEl) selectEl.value = selectedHours;
+    } else {
+      // 2. SETEL BARU (Saat Operator Klik Tombol)
+      if (!selectEl || !textEl) return;
+      text = textEl.value.trim();
+      if (!text) {
+        showToast("Teks pengumuman tidak boleh kosong!", "error");
+        return;
+      }
+      selectedHours = parseInt(selectEl.value);
+      const ms = selectedHours * 60 * 60 * 1000;
+      endTime = Date.now() + ms;
+
+      // Simpan data lengkap ke localStorage termasuk interval jamnya
+      localStorage.setItem(
+        "autoTimerData",
+        JSON.stringify({ text, endTime, hours: selectedHours }),
+      );
+      showToast(
+        `Timer Looping aktif! Disiarkan setiap ${selectedHours} jam.`,
+        "success",
+      );
+      if (UI?.addLog)
+        UI.addLog(`Setel Looping Pengumuman: ${selectedHours} jam`, "tts");
+    }
+
+    // Hitung sisa waktu untuk putaran saat ini
+    let timeLeftInit = endTime - Date.now();
+
+    // Penanganan jika waktu terlewati saat halaman mati/refresh lambat
+    if (timeLeftInit <= 0) {
+      if (isRestoring) {
+        // Jika saat di-refresh ternyata waktunya sudah lewat, langsung bunyikan
+        // dan buat putaran (loop) baru secara otomatis
+        TTS.speak(text);
+        const ms = selectedHours * 60 * 60 * 1000;
+        endTime = Date.now() + ms;
+        timeLeftInit = ms;
+        localStorage.setItem(
+          "autoTimerData",
+          JSON.stringify({ text, endTime, hours: selectedHours }),
+        );
+      } else {
+        localStorage.removeItem("autoTimerData");
+        if (countdownEl) countdownEl.style.display = "none";
+        return;
+      }
+    }
+
+    // Bersihkan sisa interval/timer sebelumnya agar tidak duplikat
+    if (announcementTimer) clearTimeout(announcementTimer);
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    if (countdownEl) countdownEl.style.display = "block";
+
+    // 3. FUNGSI HITUNG MUNDUR (COUNTDOWN VISUAL)
+    function updateCountdownDisplay() {
+      const now = Date.now();
+      const timeLeft = endTime - now;
+
+      if (timeLeft <= 0) {
+        // Putaran waktu saat ini habis!
+        clearInterval(countdownInterval);
+        // Biarkan setTimeout di bawah yang menangani perpindahan ke loop berikutnya
+      } else {
+        const h = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+        const m = Math.floor((timeLeft / 1000 / 60) % 60);
+        const s = Math.floor((timeLeft / 1000) % 60);
+
+        const formattedTime =
+          String(h).padStart(2, "0") +
+          ":" +
+          String(m).padStart(2, "0") +
+          ":" +
+          String(s).padStart(2, "0");
+
+        if (countdownEl)
+          countdownEl.innerText = `🔄 Repeat Mode | Sisa: ${formattedTime}`;
+      }
+    }
+
+    updateCountdownDisplay();
+    countdownInterval = setInterval(updateCountdownDisplay, 1000);
+
+    // 4. EKSEKUSI SUARA & JADWALKAN REPEAT OTOMATIS
+    announcementTimer = setTimeout(() => {
+      // Jalankan suara TOA
+      TTS.speak(text);
+      if (UI?.addLog) UI.addLog("Auto-Panggil disiarkan (Looping)", "tts");
+
+      // 🔥 REPEAT OTOMATIS BERJALAN DI SINI!
+      // Hitung target waktu baru untuk putaran selanjutnya (misal: 1 jam lagi dari sekarang)
+      const nextMs = selectedHours * 60 * 60 * 1000;
+      const nextEndTime = Date.now() + nextMs;
+
+      // Update memori browser dengan waktu target yang baru
+      localStorage.setItem(
+        "autoTimerData",
+        JSON.stringify({ text, endTime: nextEndTime, hours: selectedHours }),
+      );
+
+      // Panggil fungsi ini sendiri lagi (Rekursif) untuk memulai hitung mundur babak baru!
+      scheduleAnnouncement(true);
+    }, timeLeftInit);
+  }
+  function cancelAnnouncement() {
+    const countdownEl = document.getElementById("timer-countdown");
+    let wasActive = false;
+
+    if (announcementTimer) {
+      clearTimeout(announcementTimer);
+      announcementTimer = null;
+      wasActive = true;
+    }
+
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
+
+    if (countdownEl) countdownEl.style.display = "none";
+
+    // HAPUS DARI MEMORI BROWSER JUGA
+    localStorage.removeItem("autoTimerData");
+
+    if (wasActive) {
+      showToast("Timer Auto-Panggil berhasil dibatalkan!", "success");
+      if (UI?.addLog) UI.addLog("Timer Auto-Panggil dibatalkan", "err");
+    } else {
+      showToast("Tidak ada timer yang sedang aktif.", "error");
+    }
+  }

@@ -1,0 +1,13 @@
+
+    <link rel="stylesheet" href="assets/css/min/main.min.css" />
+    <link rel="stylesheet" href="assets/css/min/animations.min.css" />
+    <link rel="stylesheet" href="assets/css/min/header.min.css" />
+    <link rel="stylesheet" href="assets/css/min/cards.min.css" />
+    <link rel="stylesheet" href="assets/css/min/controls.min.css" />
+
+
+     <script src="assets/js/min/config-min.js"></script>
+    <script src="assets/js/min/ui-min.js"></script>
+    <script src="assets/js/min/tts-min.js"></script>
+    <script src="assets/js/min/mic-min.js"></script>
+    <script src="assets/js/min/app-min.js"></script>

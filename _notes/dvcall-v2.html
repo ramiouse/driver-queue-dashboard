@@ -1,0 +1,1127 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Driver Call System</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Barlow:wght@800;900&display=swap");
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #0b0d10;
+        --bg2: #101318;
+        --bg3: #151920;
+        --border: #1e2530;
+        --blue: #3b82f6;
+        --blue-dim: rgba(59, 130, 246, 0.12);
+        --green: #10b981;
+        --green-dim: rgba(16, 185, 129, 0.12);
+        --red: #ef4444;
+        --red-dim: rgba(239, 68, 68, 0.12);
+        --yellow: #f59e0b;
+        --text: #e8edf5;
+        --text-mid: #6b7a94;
+        --text-dim: #3d4a5c;
+        --mono: "JetBrains Mono", monospace;
+        --head: "Barlow", sans-serif;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--mono);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 32px 24px 48px;
+      }
+
+      .app {
+        width: 100%;
+        max-width: 560px;
+      }
+
+      /* HEADER */
+      .header {
+        text-align: left;
+        margin-bottom: 36px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        color: var(--text-mid);
+        margin-bottom: 16px;
+      }
+
+      .breadcrumb-bar {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .breadcrumb-bar::before {
+        content: ">";
+        animation: glowPulse 2s ease-in-out infinite;
+      }
+
+      .breadcrumb-bar .nova {
+        animation: glowPulse 2s ease-in-out infinite;
+      }
+
+      .breadcrumb-bar span {
+        color: var(--text-dim);
+      }
+
+      @keyframes glowPulse {
+        0%,
+        100% {
+          color: var(--blue);
+          text-shadow:
+            0 0 6px rgba(59, 130, 246, 0.5),
+            0 0 12px rgba(59, 130, 246, 0.3);
+        }
+
+        50% {
+          color: #93c5fd;
+          text-shadow:
+            0 0 14px rgba(147, 197, 253, 1),
+            0 0 28px rgba(59, 130, 246, 0.8),
+            0 0 48px rgba(59, 130, 246, 0.4);
+        }
+      }
+
+      .live-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+        }
+
+        50% {
+          opacity: 0.7;
+          box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+        }
+      }
+
+      h1 {
+        font-family: var(--head);
+        font-size: 52px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -1px;
+        margin-bottom: 8px;
+        text-align: left;
+      }
+
+      h1 .white-part {
+        color: #ffffff;
+      }
+
+      h1 .slash {
+        color: var(--blue);
+        font-style: normal;
+      }
+
+      h1 .cursor {
+        color: var(--blue);
+        animation: blink 0.9s step-end infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0;
+        }
+      }
+
+      h1 span {
+        color: var(--blue);
+      }
+
+      .subtitle {
+        font-size: 11px;
+        color: var(--text-mid);
+        line-height: 1.7;
+        margin-top: 10px;
+      }
+
+      /* DRIVER CARDS */
+      .drivers {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .driver-card {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: all 0.2s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .driver-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--blue-dim);
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .driver-card:hover::before {
+        opacity: 1;
+      }
+
+      .driver-card.calling {
+        border-color: var(--blue);
+        animation: borderPulse 1s infinite;
+      }
+
+      .driver-card.success {
+        border-color: var(--green);
+      }
+
+      @keyframes borderPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3);
+        }
+
+        50% {
+          box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+        }
+      }
+
+      .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        background: var(--blue-dim);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--head);
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--blue);
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+      }
+
+      .driver-info {
+        flex: 1;
+        position: relative;
+        z-index: 1;
+      }
+
+      .driver-name {
+        font-family: var(--head);
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 3px;
+      }
+
+      .driver-detail {
+        font-size: 11px;
+        color: var(--text-mid);
+      }
+
+      .driver-status {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        padding: 3px 10px;
+        border-radius: 20px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .driver-status.standby {
+        color: var(--green);
+        background: var(--green-dim);
+      }
+
+      .driver-status.busy {
+        color: var(--yellow);
+        background: rgba(245, 158, 11, 0.12);
+      }
+
+      /* CALL BUTTON */
+      .call-btn {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 18px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        letter-spacing: 0.04em;
+        transition: all 0.15s;
+        position: relative;
+        z-index: 1;
+        white-space: nowrap;
+      }
+
+      .call-btn.primary {
+        background: var(--blue);
+        color: #fff;
+      }
+
+      .call-btn.primary:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+      }
+
+      .call-btn.calling-state {
+        background: var(--red);
+        color: #fff;
+        animation: btnPulse 1s infinite;
+      }
+
+      @keyframes btnPulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0.7;
+        }
+      }
+
+      .call-btn.done {
+        background: var(--green-dim);
+        color: var(--green);
+        border: 1px solid var(--green);
+      }
+
+      /* SPEAKER OUTPUT BOX */
+      .output-box {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .output-label {
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .output-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      .output-text {
+        font-size: 13px;
+        color: var(--text-mid);
+        line-height: 1.7;
+        min-height: 44px;
+        font-style: italic;
+      }
+
+      .output-text.speaking {
+        color: var(--text);
+      }
+
+      /* WAVE ANIMATION */
+      .wave {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        height: 24px;
+        margin-top: 10px;
+      }
+
+      .wave-bar {
+        width: 3px;
+        border-radius: 2px;
+        background: var(--blue);
+        animation: wave 1.2s ease-in-out infinite;
+      }
+
+      .wave-bar:nth-child(1) {
+        animation-delay: 0s;
+        height: 8px;
+      }
+
+      .wave-bar:nth-child(2) {
+        animation-delay: 0.1s;
+        height: 16px;
+      }
+
+      .wave-bar:nth-child(3) {
+        animation-delay: 0.2s;
+        height: 24px;
+      }
+
+      .wave-bar:nth-child(4) {
+        animation-delay: 0.3s;
+        height: 16px;
+      }
+
+      .wave-bar:nth-child(5) {
+        animation-delay: 0.4s;
+        height: 8px;
+      }
+
+      .wave-bar:nth-child(6) {
+        animation-delay: 0.2s;
+        height: 20px;
+      }
+
+      .wave-bar:nth-child(7) {
+        animation-delay: 0.1s;
+        height: 12px;
+      }
+
+      @keyframes wave {
+        0%,
+        100% {
+          transform: scaleY(0.4);
+          opacity: 0.5;
+        }
+
+        50% {
+          transform: scaleY(1);
+          opacity: 1;
+        }
+      }
+
+      .wave {
+        display: none;
+      }
+
+      .wave.active {
+        display: flex;
+      }
+
+      /* MIC SECTION */
+      .mic-section {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+      }
+
+      .mic-label {
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .mic-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      .mic-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .mic-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--border);
+        background: var(--bg3);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-mid);
+        transition: all 0.2s;
+        flex-shrink: 0;
+      }
+
+      .mic-btn:hover {
+        border-color: var(--blue);
+        color: var(--blue);
+      }
+
+      .mic-btn.listening {
+        border-color: var(--red);
+        background: var(--red-dim);
+        color: var(--red);
+        animation: micPulse 1s infinite;
+      }
+
+      @keyframes micPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3);
+        }
+
+        50% {
+          box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+        }
+      }
+
+      .mic-btn svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .mic-text {
+        flex: 1;
+      }
+
+      .mic-status {
+        font-size: 12px;
+        color: var(--text-mid);
+        margin-bottom: 3px;
+      }
+
+      .mic-transcript {
+        font-size: 11px;
+        color: var(--text-dim);
+        min-height: 16px;
+        font-style: italic;
+      }
+
+      .mic-transcript.active {
+        color: var(--blue);
+      }
+
+      /* CUSTOM TEXT */
+      .custom-section {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .custom-input {
+        flex: 1;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 11px 14px;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 12px;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      .custom-input:focus {
+        border-color: var(--blue);
+      }
+
+      .custom-input::placeholder {
+        color: var(--text-dim);
+      }
+
+      .speak-btn {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 11px 18px;
+        color: var(--text-mid);
+        font-family: var(--mono);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .speak-btn:hover {
+        border-color: var(--blue);
+        color: var(--blue);
+      }
+
+      .speak-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* VOLUME */
+      .vol-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border);
+      }
+
+      .vol-label {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      input[type="range"] {
+        flex: 1;
+        accent-color: var(--blue);
+        height: 4px;
+        cursor: pointer;
+      }
+
+      .vol-val {
+        font-size: 11px;
+        color: var(--text-mid);
+        width: 30px;
+        text-align: right;
+      }
+
+      /* VOICE SELECT */
+      .voice-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      .voice-label {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .voice-select {
+        flex: 1;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 7px 12px;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 11px;
+        outline: none;
+        cursor: pointer;
+      }
+
+      /* LOG */
+      .log {
+        margin-top: 16px;
+        max-height: 120px;
+        overflow-y: auto;
+      }
+
+      .log-entry {
+        font-size: 10px;
+        color: var(--text-dim);
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(30, 37, 48, 0.5);
+        display: flex;
+        gap: 10px;
+      }
+
+      .log-entry:last-child {
+        border-bottom: none;
+      }
+
+      .log-time {
+        color: var(--text-dim);
+        flex-shrink: 0;
+      }
+
+      .log-msg {
+        color: var(--text-mid);
+      }
+
+      .log-msg.call {
+        color: var(--blue);
+      }
+
+      .log-msg.mic {
+        color: var(--green);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- HEADER -->
+      <div class="header">
+        <div class="breadcrumb-bar">
+          <span class="nova">NOVA.CONSOLE</span> <span>/ V1.0</span>
+        </div>
+        <h1>
+          <span class="white-part">Driver </span><span class="slash">/Call</span
+          ><span class="cursor">_</span>
+        </h1>
+        <p class="subtitle">
+          Klik tombol panggil — suara otomatis keluar dari speaker PC kamu.<br />Atau
+          gunakan mic untuk perintah suara.
+        </p>
+      </div>
+
+      <!-- SPEAKER OUTPUT -->
+      <div class="output-box">
+        <div class="output-label">Speaker Output</div>
+        <div class="output-text" id="output-text">Menunggu panggilan...</div>
+        <div class="wave" id="wave">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+      </div>
+
+      <!-- DRIVER CARDS -->
+      <div class="drivers" id="drivers">
+        <div class="driver-card" id="card-toal">
+          <div class="avatar">TO</div>
+          <div class="driver-info">
+            <div class="driver-name">Pak Toal</div>
+            <div class="driver-detail">Supir Utama • Toyota Avanza</div>
+          </div>
+          <span class="driver-status standby" id="status-toal">Standby</span>
+          <button
+            class="call-btn primary"
+            id="btn-toal"
+            onclick="panggilSupir('toal')"
+          >
+            📢 Panggil
+          </button>
+        </div>
+        <div class="driver-card" id="card-mic">
+          <div class="avatar">MI</div>
+          <div class="driver-info">
+            <div class="driver-name">Pak Mic</div>
+            <div class="driver-detail">Supir Cadangan • Honda Mobilio</div>
+          </div>
+          <span class="driver-status standby" id="status-mic">Standby</span>
+          <button
+            class="call-btn primary"
+            id="btn-mic"
+            onclick="panggilSupir('mic')"
+          >
+            📢 Panggil
+          </button>
+        </div>
+      </div>
+
+      <!-- CUSTOM TEXT -->
+      <div class="custom-section">
+        <input
+          class="custom-input"
+          id="custom-text"
+          placeholder="Ketik teks custom untuk diucapkan..."
+        />
+        <button class="speak-btn" onclick="speakCustom()">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+          </svg>
+          Ucapkan
+        </button>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="output-box">
+        <div class="output-label">Pengaturan Suara</div>
+
+        <div class="voice-row">
+          <div class="voice-label">Suara</div>
+          <select class="voice-select" id="voice-select"></select>
+        </div>
+        <div class="vol-row">
+          <div class="vol-label">Volume</div>
+          <input
+            type="range"
+            id="vol"
+            min="0"
+            max="1"
+            step="0.1"
+            value="1"
+            oninput="
+              document.getElementById('vol-val').textContent =
+                Math.round(this.value * 100) + '%'
+            "
+          />
+          <div class="vol-val" id="vol-val">100%</div>
+        </div>
+        <div class="vol-row">
+          <div class="vol-label">Kecepatan</div>
+          <input
+            type="range"
+            id="rate"
+            min="0.5"
+            max="2"
+            step="0.1"
+            value="0.9"
+            oninput="
+              document.getElementById('rate-val').textContent = this.value + 'x'
+            "
+          />
+          <div class="vol-val" id="rate-val">0.9x</div>
+        </div>
+      </div>
+
+      <!-- MIC SECTION -->
+      <div class="mic-section">
+        <div class="mic-label">Perintah Suara (Mic)</div>
+        <div class="mic-controls">
+          <button class="mic-btn" id="mic-btn" onclick="toggleMic()">
+            <svg
+              id="mic-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+            </svg>
+          </button>
+          <div class="mic-text">
+            <div class="mic-status" id="mic-status">
+              Klik mic untuk mulai dengarkan
+            </div>
+            <div class="mic-transcript" id="mic-transcript">
+              Coba: "panggil toal" atau "panggil mic"
+            </div>
+          </div>
+        </div>
+
+        <!-- LOG -->
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+
+    <script>
+      // ── STATE ──
+      let synth = window.speechSynthesis;
+      let voices = [];
+      let recognition = null;
+      let isListening = false;
+      let isSpeaking = false;
+      let callTimers = {};
+
+      const drivers = {
+        toal: {
+          name: "Pak Toal",
+          messages: [
+            "Pak Toal, tolong ke depan sekarang.",
+            "Pak Toal, mobil sudah disiapkan?",
+            "Pak Toal, segera ke lokasi penjemputan.",
+            "Pak Toal, ditunggu di depan ya.",
+          ],
+        },
+        mic: {
+          name: "Pak Mic",
+          messages: [
+            "Pak Mic, tolong ke depan sekarang.",
+            "Pak Mic, ada penumpang yang menunggu.",
+            "Pak Mic, segera ke lokasi penjemputan.",
+            "Pak Mic, ditunggu di depan ya.",
+          ],
+        },
+      };
+
+      // ── LOAD VOICES ──
+      function loadVoices() {
+        voices = synth
+          .getVoices()
+          .filter((v) => v.lang.startsWith("id") || v.lang.startsWith("en"));
+        if (!voices.length) voices = synth.getVoices();
+        const sel = document.getElementById("voice-select");
+        sel.innerHTML = "";
+        voices.forEach((v, i) => {
+          const opt = document.createElement("option");
+          opt.value = i;
+          opt.textContent = `${v.name} (${v.lang})`;
+          if (v.lang.startsWith("id")) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      }
+
+      synth.onvoiceschanged = loadVoices;
+      loadVoices();
+
+      // ── SPEAK ──
+      function speak(text, onEnd) {
+        if (synth.speaking) synth.cancel();
+
+        const utter = new SpeechSynthesisUtterance(text);
+        const selIdx = document.getElementById("voice-select").value;
+        if (voices[selIdx]) utter.voice = voices[selIdx];
+        utter.volume = parseFloat(document.getElementById("vol").value);
+        utter.rate = parseFloat(document.getElementById("rate").value);
+        utter.pitch = 1;
+
+        const outputText = document.getElementById("output-text");
+        const wave = document.getElementById("wave");
+
+        utter.onstart = () => {
+          isSpeaking = true;
+          outputText.textContent = text;
+          outputText.classList.add("speaking");
+          wave.classList.add("active");
+        };
+        utter.onend = () => {
+          isSpeaking = false;
+          outputText.classList.remove("speaking");
+          wave.classList.remove("active");
+          if (onEnd) onEnd();
+        };
+        utter.onerror = () => {
+          isSpeaking = false;
+          outputText.classList.remove("speaking");
+          wave.classList.remove("active");
+        };
+
+        synth.speak(utter);
+      }
+
+      // ── PANGGIL SUPIR ──
+      function panggilSupir(id) {
+        const driver = drivers[id];
+        const btn = document.getElementById("btn-" + id);
+        const card = document.getElementById("card-" + id);
+        const statusEl = document.getElementById("status-" + id);
+
+        if (btn.classList.contains("calling-state")) {
+          // stop
+          synth.cancel();
+          resetDriver(id);
+          return;
+        }
+
+        // clear timer kalau ada
+        if (callTimers[id]) clearTimeout(callTimers[id]);
+
+        btn.textContent = "⏹ Stop";
+        btn.classList.remove("primary");
+        btn.classList.add("calling-state");
+        card.classList.add("calling");
+        statusEl.textContent = "Dipanggil";
+        statusEl.className = "driver-status";
+        statusEl.style.color = "var(--blue)";
+        statusEl.style.background = "var(--blue-dim)";
+
+        const msg =
+          driver.messages[Math.floor(Math.random() * driver.messages.length)];
+        addLog(msg, "call");
+
+        speak(msg, () => {
+          // repeat sekali lagi setelah jeda
+          callTimers[id] = setTimeout(() => {
+            speak(msg, () => resetDriver(id));
+          }, 1500);
+        });
+      }
+
+      function resetDriver(id) {
+        const btn = document.getElementById("btn-" + id);
+        const card = document.getElementById("card-" + id);
+        const statusEl = document.getElementById("status-" + id);
+
+        btn.textContent = "📢 Panggil";
+        btn.classList.add("primary");
+        btn.classList.remove("calling-state", "done");
+        card.classList.remove("calling", "success");
+        statusEl.textContent = "Standby";
+        statusEl.className = "driver-status standby";
+        statusEl.style.color = "";
+        statusEl.style.background = "";
+      }
+
+      // ── SPEAK CUSTOM ──
+      function speakCustom() {
+        const text = document.getElementById("custom-text").value.trim();
+        if (!text) return;
+        addLog(text, "call");
+        speak(text);
+      }
+
+      // ── MIC ──
+      function setupRecognition() {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) {
+          document.getElementById("mic-status").textContent =
+            "Browser tidak support mic :(";
+          return null;
+        }
+        const r = new SR();
+        r.lang = "id-ID";
+        r.continuous = true;
+        r.interimResults = true;
+
+        r.onresult = (e) => {
+          let interim = "",
+            final = "";
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            if (e.results[i].isFinal) final += e.results[i][0].transcript;
+            else interim += e.results[i][0].transcript;
+          }
+          const display = final || interim;
+          document.getElementById("mic-transcript").textContent = display;
+          document.getElementById("mic-transcript").classList.add("active");
+          if (final) processVoiceCommand(final.toLowerCase().trim());
+        };
+
+        r.onerror = (e) => {
+          if (e.error !== "no-speech") {
+            document.getElementById("mic-status").textContent =
+              "Error: " + e.error;
+            stopMic();
+          }
+        };
+
+        r.onend = () => {
+          if (isListening) r.start(); // restart agar terus listen
+        };
+
+        return r;
+      }
+
+      function toggleMic() {
+        if (isListening) stopMic();
+        else startMic();
+      }
+
+      function startMic() {
+        if (!recognition) recognition = setupRecognition();
+        if (!recognition) return;
+        isListening = true;
+        recognition.start();
+        document.getElementById("mic-btn").classList.add("listening");
+        document.getElementById("mic-status").textContent =
+          "🔴 Mendengarkan... (aktif)";
+        document.getElementById("mic-transcript").textContent =
+          'Katakan: "panggil toal" atau "panggil mic"';
+      }
+
+      function stopMic() {
+        isListening = false;
+        if (recognition) recognition.stop();
+        document.getElementById("mic-btn").classList.remove("listening");
+        document.getElementById("mic-status").textContent =
+          "Klik mic untuk mulai dengarkan";
+        document.getElementById("mic-transcript").classList.remove("active");
+      }
+
+      function processVoiceCommand(cmd) {
+        addLog('"' + cmd + '"', "mic");
+        if (cmd.includes("toal")) {
+          panggilSupir("toal");
+        } else if (cmd.includes("mic") || cmd.includes("mik")) {
+          panggilSupir("mic");
+        } else if (cmd.includes("stop") || cmd.includes("berhenti")) {
+          synth.cancel();
+          resetDriver("toal");
+          resetDriver("mic");
+          speak("Panggilan dihentikan.");
+        } else if (cmd.includes("semua") || cmd.includes("all")) {
+          panggilSupir("toal");
+          setTimeout(() => panggilSupir("mic"), 5000);
+        }
+      }
+
+      // ── LOG ──
+      function addLog(msg, type) {
+        const log = document.getElementById("log");
+        const now = new Date();
+        const time = now.toTimeString().slice(0, 8);
+        const entry = document.createElement("div");
+        entry.className = "log-entry";
+        entry.innerHTML = `<span class="log-time">${time}</span><span class="log-msg ${type}">${type === "mic" ? "🎤 " : "🔊 "}${msg}</span>`;
+        log.prepend(entry);
+        // keep max 20 entries
+        while (log.children.length > 20) log.removeChild(log.lastChild);
+      }
+
+      // ── KEYBOARD SHORTCUT ──
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "F1") {
+          e.preventDefault();
+          panggilSupir("toal");
+        }
+        if (e.key === "F2") {
+          e.preventDefault();
+          panggilSupir("mic");
+        }
+        if (e.key === "Escape") {
+          synth.cancel();
+          resetDriver("toal");
+          resetDriver("mic");
+        }
+        if (e.ctrlKey && e.key === "m") {
+          e.preventDefault();
+          toggleMic();
+        }
+      });
+
+      addLog("Sistem siap. Tekan F1 = Pak Toal, F2 = Pak Mic", "call");
+    </script>
+  </body>
+</html>

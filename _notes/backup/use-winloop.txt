@@ -1,0 +1,26 @@
+install pake venv
+./venv/Scripts/pip.exe install winloop
+
+
+
+import asyncio
+import sys
+
+if sys.platform == "win32":
+    try:
+        import winloop
+
+        asyncio.set_event_loop_policy(
+            winloop.EventLoopPolicy()
+        )
+
+        print("🚀 Winloop aktif")
+
+    except Exception as e:
+        print("⚠️ Winloop gagal:", e)
+
+        asyncio.set_event_loop_policy(
+            asyncio.WindowsSelectorEventLoopPolicy()
+        )
+
+        print("↩️ Fallback ke WindowsSelectorEventLoopPolicy")

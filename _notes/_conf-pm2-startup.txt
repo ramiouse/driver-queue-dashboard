@@ -1,0 +1,19 @@
+#cek default node
+npm config get prefix
+
+#tambah ke path
+C:\Program Files\nodejs\node_modules\.bin
+
+#install
+npm install -g pm2-windows-startup
+pm2-windows-startup install 
+
+#cek 
+npm list -g pm2-windows-startup
+
+
+#run langsung kalo pm2-windows-startup install tidak bisa
+node "C:\Program Files\nodejs\node_modules\pm2-windows-startup\index.js" install
+
+
+

@@ -1,0 +1,154 @@
+Nah, tanda **HTTPS dicoret merah** atau tulisan **"Not Secure"** itu muncul karena sertifikat SSL (`key.pem` dan `cert.pem`) yang kita buat lewat OpenSSL tadi statusnya adalah **Self-Signed Certificate** (sertifikat buatan sendiri, bukan beli dari lembaga resmi kayak DigiCert atau Let's Encrypt).
+
+Karena server lu jalan di jaringan **LAN / Lokal (localhost / IP Local)**, sebenarnya ini 100% aman dan data lu tetep terenkripsi. Tapi, Chrome emang bawaannya protektif dan bakal tetep nyoret HTTPS-nya karena dia gak kenal siapa yang bikin sertifikat itu.
+
+Biar tanda coret merah itu hilang dan berubah jadi **Gembok Hijau / Aman (Secure)** di PC Server atau PC Admin lu, ada dua cara yang bisa lu pakai:
+
+---
+
+### Cara 1: Cara Instant (Khusus Google Chrome / Edge)
+
+Lu bisa memaksa Chrome buat mempercayai IP lokal server lu lewat fitur *flags*. Ini cara paling gampang tanpa perlu install apa-apa.
+
+1. Buka browser Google Chrome di PC Server / PC Admin.
+2. Di kolom URL atas, ketik perintah ini lalu tekan **Enter**:
+```text
+chrome://flags/#allow-insecure-localhost
+
+```
+
+
+3. Lu bakal langsung diarahkan ke settingan **"Allow invalid certificates for resources loaded from localhost"**.
+4. Ubah statusnya dari **Disabled** menjadi **Enabled**.
+5. Klik tombol **Relaunch** di pojok kanan bawah buat ngerestart Chrome.
+
+> **Hasil:** Begitu Chrome kebuka lagi, tanda silang merah di `localhost` lu bakal langsung hilang dan dianggap aman!
+
+---
+
+### Cara 2: Cara Resmi Lokal (Pake MKCERT)
+
+Kalau aplikasi lu mau dibuka dari HP atau laptop lain sesama jaringan Wi-Fi/LAN dan pengen gemboknya ijo semua tanpa coret-coret, lu harus bikin sertifikat lokal yang dianggap sah oleh Windows menggunakan *tool* gratis bernama **mkcert**.
+
+Berikut langkah-langkahnya:
+
+1. **Install Chocolatey** (jika belum ada) di CMD (Run as Administrator) buat download mkcert:
+```cmd
+@powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))"
+
+```
+
+
+2. **Install mkcert**:
+```cmd
+choco install mkcert
+
+```
+
+
+3. **Daftarkan mkcert ke sistem Windows** (biar Windows percaya sama sertifikat buatan lu):
+```cmd
+mkcert -install
+
+```
+
+
+4. **Generate Sertifikat Baru buat Localhost & IP Lu**:
+Masuk ke folder backend via CMD:
+```cmd
+cd "D:\codes\CODES\sleekpremium\drivercall\_launching\V0.1.3.2\backend"
+
+```
+
+
+Lalu jalankan perintah ini (ganti `11.22.33.44` pakai IP lokal PC server lu kalau ada):
+```cmd
+mkcert -key-file key.pem -cert-file cert.pem localhost 127.0.0.1 ::1
+
+```
+
+
+5. **Restart PM2 lu**:
+```cmd
+pm2 reload backend-toa2
+
+```
+
+
+
+Setelah pakai **Cara 2**, PC Windows lu bakal mendaftarkan sertifikat itu sebagai sertifikat otoritas resmi lokal. Begitu lu refresh Chrome, gemboknya bakal langsung **terkunci rapat, berwarna hijau, dan tidak dicoret lagi** tanpa perlu otak-atik Chrome flags!
+
+Gue saranin pakai **Cara 1** dulu kalau lu cuma mau ngetes di PC lokal, super cepat, Ky!
+
+
+
+------------------
+CARA CLAUDE
+------------------
+
+Jalankan langkah ini satu per satu di CMD PC server:
+1. Install mkcert
+cmd winget install mkcert
+2. Tutup CMD, buka CMD baru, cek berhasil
+cmdmkcert --version
+3. Install CA lokal (sekali saja)
+cmdmkcert -install
+Akan muncul popup Windows minta izin → klik Yes
+4. Generate certificate untuk IP server
+cmdcd path\ke\folder\backend
+mkcert 192.168.100.5
+Hasilnya 2 file di folder backend:
+192.168.100.5.pem
+192.168.100.5-key.pem
+5. Update main.py
+pythonif __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8888,
+        ssl_keyfile="192.168.100.5-key.pem",
+        ssl_certfile="192.168.100.5.pem",
+        reload=True
+    )
+6. Di setiap PC client — install CA sekali
+Copy file ini dari PC server ke tiap PC client:
+C:\Users\<username>\AppData\Local\mkcert\rootCA.pem
+Lalu di PC client jalankan:
+cmdmkcert -install
+Atau double click rootCA.pem → Install Certificate → Trusted Root CA.
+Setelah itu semua PC client akses https://192.168.100.5:8888 → langsung hijau tanpa warning.
+
+
+------------------
+PAKE OPEN SSL
+------------------
+
+Kalau file beda folder
+
+Misal taro di:
+
+backend/ssl/
+
+maka harus:
+
+ssl_keyfile="ssl/key.pem",
+ssl_certfile="ssl/cert.pem",
+Kalau belum punya key.pem & cert.pem
+
+Bisa generate sendiri.
+
+Cara cepat pakai OpenSSL
+
+Install:
+
+OpenSSL for Windows
+
+Lalu:
+
+openssl req -x509 -newkey rsa:4096 -nodes -out cert.pem -keyout key.pem -days 365
+
+Nanti otomatis bikin:
+
+cert.pem
+key.pem
